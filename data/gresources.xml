@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/images">
+    <file>up.svg</file>
+    <file>left.svg</file>
+    <file>right.svg</file>
+    <file>down.svg</file>
+    <file>title-logo.svg</file>
+  </gresource>
+</gresources>
+
