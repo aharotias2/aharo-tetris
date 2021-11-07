@@ -474,6 +474,7 @@ namespace Ahoris {
             
             do {
                 
+                is_erased = false;
                 int j = size.y_length() - 1;
                 int v1 = j;
                 int v2 = 0;
@@ -486,6 +487,7 @@ namespace Ahoris {
                         }
                         erase_row(j);
                         v2++;
+                        is_erased = true;
                     }
                 }
                 
@@ -493,7 +495,13 @@ namespace Ahoris {
                     changed();
                     Timeout.add(500, fix_falling.callback);
                     yield;
-                    move_down(v1, v2);
+                    bool move_completed = false;
+                    while (!move_completed) {
+                        move_completed = yield move_down(v1, v2);
+                        changed();
+                        Timeout.add(50, fix_falling.callback);
+                        yield;
+                    }
                     changed();
                     Timeout.add(500, fix_falling.callback);
                     yield;
@@ -526,21 +534,120 @@ namespace Ahoris {
             score_changed(score);
         }
         
-        private void move_down(int v1, int v2) {
+        private async bool move_down(int v1, int v2) {
+            bool[,] checker = new bool[size.y_length(), size.x_length()];
             for (int j = v1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
-                    if (field[j, i].status != EMPTY) {
-                        int k = j;
-                        if (field[k + v2, i].status == EMPTY) {
-                            field[k + v2, i] = field[k, i];
-                            field[k, i].status = EMPTY;
-                            k++;
+                    //print("c[%d, %d]\n", j, i);
+                    if (field[j, i].status == EMPTY) {
+                        //print("move down[%d, %d] => skip\n", i, j);
+                        continue;
+                    }
+                    if (is_surrounded_by_space(j, i, checker)) {
+                        int move_span = count_move_span(checker);
+                        //print("move_down[%d, %d] => go_down (span = %d)\n", i, j, move_span);
+                        //print_checker(checker);
+                        if (move_span > 0) {
+                            move_down_span(checker, move_span);
                         }
+                        return false;
+                    }
+                    checker = new bool[size.y_length(), size.x_length()];
+                }
+            }
+            return true;
+        }
+        
+        private int count_move_span(bool[,] checker) {
+            int move_span = 1;
+            while (temp(checker, move_span)) {
+                move_span++;
+            }
+            return move_span - 1;
+        }
+        
+        private bool temp(bool[,] checker, int move_span) {
+            for (int j = size.y_length() - 1; j >= 0; j--) {
+                for (int i = 0; i < size.x_length(); i++) {
+                    if (checker[j, i]) {
+                        if ((j + move_span) >= size.y_length()) {
+                            return false;
+                        }
+                        if (field[j + move_span, i].status != EMPTY) {
+                            if (!checker[j + move_span, i]) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        
+        private void move_down_span(bool[,] checker, int move_span) {
+            for (int j = size.y_length() - 1; j >= 0; j--) {
+                for (int i = 0; i < size.x_length(); i++) {
+                    if (checker[j, i]) {
+                        field[j + move_span, i] = field[j, i];
+                        field[j, i].status = EMPTY;
                     }
                 }
             }
         }
         
+        private bool is_surrounded_by_space(int y, int x, bool[,] checker) {
+            if (field[y, x].status == EMPTY) {
+                return true;
+            } else if (y == size.y_length() - 1) {
+                checker[y, x] = true;
+                //print("b[%d, %d]\n", y, x);
+                return false;
+            } else {
+                //print("i[%d, %d]\n", y, x);
+                checker[y, x] = true;
+                
+                if (y == size.y_length() - 1) {
+                    // do nothing.
+                    return false;
+                } else if (!checker[y + 1, x]) {
+                    if (!is_surrounded_by_space(y + 1, x, checker)) {
+                        //print("b[%d, %d]\n", y, x);
+                        return false;
+                    }
+                }
+                
+                if (x == size.x_length() - 1) {
+                    // do nothing.
+                } else if (!checker[y, x + 1]) {
+                    if (!is_surrounded_by_space(y, x + 1, checker)) {
+                        //print("r[%d, %d]\n", y, x);
+                        return false;
+                    }
+                }
+                
+                if (x == 0) {
+                    // do nothing.
+                } else if (!checker[y, x - 1]) {
+                    if (!is_surrounded_by_space(y, x - 1, checker)) {
+                        //print("l[%d, %d]\n", y, x);
+                        return false;
+                    }
+                }
+
+                if (y == 0) {
+                    // do nothing.
+                } else if (!checker[y - 1, x]) {
+                    if (!is_surrounded_by_space(y - 1, x, checker)) {
+                        //print("t[%d, %d]\n", y, x);
+                        return false;
+                    }
+                }
+
+                //print("o[%d, %d]\n", y, x);
+                return true;
+            }
+        }
+
         private bool can_continue() {
             for (int i = 0; i < size.x_length(); i++) {
                 if (field[0, i].status != EMPTY) {
