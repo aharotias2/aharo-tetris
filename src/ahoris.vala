@@ -216,7 +216,7 @@ namespace Ahoris {
         public signal void score_changed(int score);
         public signal void game_over();
         public ModelSize size { get; private set; }
-        public int speed { get; set; default = 60; }
+        public int speed { get; set; default = 90; }
         public FallingBlock falling { get; private set; }
         public FallingBlock falling_reserved { get; private set; }
         public int score { get; private set; default = 0; }
@@ -268,10 +268,10 @@ namespace Ahoris {
                             changed();
                         } else {
                             yield fix_falling();
-                            speed += 7;
+                            speed += 5;
                         }
                     } else {
-                        speed += 7;
+                        speed += 5;
                     }
                 }
                 Timeout.add(60000 / speed, start.callback);
@@ -471,6 +471,7 @@ namespace Ahoris {
             yield;
             
             bool is_erased = false;
+            int bonus = 1;
             
             do {
                 
@@ -479,21 +480,24 @@ namespace Ahoris {
                 int v1 = j;
                 int v2 = 0;
                 bool flag = true;
+                bool[] v3 = new bool[size.y_length()];
                 for (; j >= 0; j--) {
                     if (can_erase_row(j)) {
                         if (flag) {
                             v1 = j;
                             flag = false;
                         }
-                        erase_row(j);
+                        v3[j] = true;
                         v2++;
+                        bonus++;
                         is_erased = true;
                     }
                 }
                 
                 if (v2 > 0) {
+                    yield erase_row(v3, bonus);
                     changed();
-                    Timeout.add(500, fix_falling.callback);
+                    Timeout.add(200, fix_falling.callback);
                     yield;
                     bool move_completed = false;
                     while (!move_completed) {
@@ -503,8 +507,10 @@ namespace Ahoris {
                         yield;
                     }
                     changed();
-                    Timeout.add(500, fix_falling.callback);
+                    Timeout.add(200, fix_falling.callback);
                     yield;
+                    
+                    bonus *= 2;
                 }
                 
             } while (is_erased);
@@ -526,14 +532,23 @@ namespace Ahoris {
             return true;
         }
         
-        private void erase_row(int y) {
-            for (int x = 0; x < size.x_length(); x++) {
-                field[y, x].status = EMPTY;
+        private async void erase_row(bool[] v3, int bonus) {
+            int middle = size.x_length() / 2;
+            for (int x1 = middle, x2 = middle - 1; x1 < size.x_length(); x1++, x2--) {
+                for (int y = size.y_length() - 1; y >= 0; y--) {
+                    if (v3[y]) {
+                        field[y, x1].status = EMPTY;
+                        field[y, x2].status = EMPTY;
+                        score += bonus;
+                    }
+                }
+                changed();
+                Timeout.add(20, erase_row.callback);
+                yield;
             }
-            score++;
             score_changed(score);
         }
-        
+
         private async bool move_down(int v1, int v2) {
             bool[,] checker = new bool[size.y_length(), size.x_length()];
             for (int j = v1; j >= 0; j--) {
@@ -600,10 +615,8 @@ namespace Ahoris {
                 return true;
             } else if (y == size.y_length() - 1) {
                 checker[y, x] = true;
-                //print("b[%d, %d]\n", y, x);
                 return false;
             } else {
-                //print("i[%d, %d]\n", y, x);
                 checker[y, x] = true;
                 
                 if (y == size.y_length() - 1) {
@@ -611,7 +624,6 @@ namespace Ahoris {
                     return false;
                 } else if (!checker[y + 1, x]) {
                     if (!is_surrounded_by_space(y + 1, x, checker)) {
-                        //print("b[%d, %d]\n", y, x);
                         return false;
                     }
                 }
@@ -620,7 +632,6 @@ namespace Ahoris {
                     // do nothing.
                 } else if (!checker[y, x + 1]) {
                     if (!is_surrounded_by_space(y, x + 1, checker)) {
-                        //print("r[%d, %d]\n", y, x);
                         return false;
                     }
                 }
@@ -629,7 +640,6 @@ namespace Ahoris {
                     // do nothing.
                 } else if (!checker[y, x - 1]) {
                     if (!is_surrounded_by_space(y, x - 1, checker)) {
-                        //print("l[%d, %d]\n", y, x);
                         return false;
                     }
                 }
@@ -638,12 +648,10 @@ namespace Ahoris {
                     // do nothing.
                 } else if (!checker[y - 1, x]) {
                     if (!is_surrounded_by_space(y - 1, x, checker)) {
-                        //print("t[%d, %d]\n", y, x);
                         return false;
                     }
                 }
 
-                //print("o[%d, %d]\n", y, x);
                 return true;
             }
         }
