@@ -553,15 +553,11 @@ namespace Ahoris {
             bool[,] checker = new bool[size.y_length(), size.x_length()];
             for (int j = v1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
-                    //print("c[%d, %d]\n", j, i);
                     if (field[j, i].status == EMPTY) {
-                        //print("move down[%d, %d] => skip\n", i, j);
                         continue;
                     }
                     if (is_surrounded_by_space(j, i, checker)) {
                         int move_span = count_move_span(checker);
-                        //print("move_down[%d, %d] => go_down (span = %d)\n", i, j, move_span);
-                        //print_checker(checker);
                         if (move_span > 0) {
                             move_down_span(checker, move_span);
                         }
