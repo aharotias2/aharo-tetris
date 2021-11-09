@@ -58,69 +58,7 @@ namespace Ahoris {
     }
 
     public class FallingBlock {
-        public const uint8[,] PATTERN_A = {
-            {0, 0, 0, 0},
-            {1, 1, 1, 1},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_A_COLOR = { 0.5, 0.75, 0.75, 1.0 };
-        
-        public const uint8[,] PATTERN_B = {
-            {0, 0, 0, 0},
-            {1, 1, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_B_COLOR = { 0.75, 0.25, 0.25, 1.0 };
-        
-        public const uint8[,] PATTERN_C = {
-            {0, 0, 0, 0},
-            {0, 0, 1, 1},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_C_COLOR = { 0.25, 0.75, 0.25, 1.0 };
-        
-        public const uint8[,] PATTERN_D = {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 1, 0, 0},
-            {0, 1, 0, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_D_COLOR = { 0.25, 0.25, 1.0, 1.0 };
-        
-        public const uint8[,] PATTERN_E = {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 0, 1, 0},
-            {0, 0, 1, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_E_COLOR = { 0.75, 0.50, 0.25, 1.0 };
-        
-        public const uint8[,] PATTERN_F = {
-            {0, 0, 0, 0},
-            {0, 1, 1, 0},
-            {0, 1, 1, 0},
-            {0, 0, 0, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_F_COLOR = { 0.75, 0.75, 0.25, 1.0 };
-        
-        public const uint8[,] PATTERN_G = {
-            {0, 0, 0, 0},
-            {1, 1, 1, 0},
-            {0, 1, 0, 0},
-            {0, 0, 0, 0}
-        };
-        
-        public const Gdk.RGBA PATTERN_G_COLOR = { 0.75, 0.25, 0.75, 1.0 };
-        
+        public int length;
         public uint8[,] data;
         public Gdk.RGBA base_color;
         public Gdk.Point position;
@@ -139,37 +77,72 @@ namespace Ahoris {
             switch (pattern_num % 7) {
               default:
               case 0:
-                ptr = PATTERN_A;
-                base_color = PATTERN_A_COLOR;
+                ptr = {
+                    {0, 0, 0, 0},
+                    {1, 1, 1, 1},
+                    {0, 0, 0, 0},
+                    {0, 0, 0, 0}
+                };
+                base_color = { 0.5, 0.75, 0.75, 1.0 };
+                length = 4;
                 break;
               case 1:
-                ptr = PATTERN_B;
-                base_color = PATTERN_B_COLOR;
+                ptr = {
+                    {0, 0, 0},
+                    {1, 1, 0},
+                    {0, 1, 1},
+                };
+                base_color = { 0.75, 0.25, 0.25, 1.0 };
+                length = 3;
                 break;
               case 2:
-                ptr = PATTERN_C;
-                base_color = PATTERN_C_COLOR;
+                ptr = {
+                    {0, 0, 0},
+                    {0, 1, 1},
+                    {1, 1, 0},
+                };
+                base_color = { 0.25, 0.75, 0.25, 1.0 };
+                length = 3;
                 break;
               case 3:
-                ptr = PATTERN_D;
-                base_color = PATTERN_D_COLOR;
+                ptr = {
+                    {0, 1, 1},
+                    {0, 1, 0},
+                    {0, 1, 0}
+                };
+                base_color = { 0.25, 0.25, 1.0, 1.0 };
+                length = 3;
                 break;
               case 4:
-                ptr = PATTERN_E;
-                base_color = PATTERN_E_COLOR;
+                ptr = {
+                    {1, 1, 0},
+                    {0, 1, 0},
+                    {0, 1, 0}
+                };
+                base_color = { 0.75, 0.50, 0.25, 1.0 };
+                length = 3;
                 break;
               case 5:
-                ptr = PATTERN_F;
-                base_color = PATTERN_F_COLOR;
+                ptr = {
+                    {1, 1},
+                    {1, 1},
+                };
+                base_color = { 0.75, 0.75, 0.25, 1.0 };
+                length = 2;
                 break;
               case 6:
-                ptr = PATTERN_G;
-                base_color = PATTERN_G_COLOR;
+                ptr = {
+                    {0, 0, 0},
+                    {1, 1, 1},
+                    {0, 1, 0},
+                };
+                base_color = { 0.75, 0.25, 0.75, 1.0 };
+                length = 3;
                 break;
             }
-            data = new uint8[4, 4];
-            for (int y = 0; y < 4; y++) {
-                for (int x = 0; x < 4; x++) {
+            data = new uint8[length, length];
+            for (int y = 0; y < length; y++) {
+                for (int x = 0; x < length; x++) {
                     data[y, x] = ptr[y, x];
                 }
             }
@@ -182,28 +155,28 @@ namespace Ahoris {
         }
         
         public void rotate_right() {
-            uint8[,] tmp = new uint8[4, 4];
-            for (int y = 0; y < 4; y++) {
-                for (int x = 0; x < 4; x++) {
-                    tmp[x, 3 - y] = data[y, x];
+            uint8[,] tmp = new uint8[length, length];
+            for (int y = 0; y < length; y++) {
+                for (int x = 0; x < length; x++) {
+                    tmp[x, length - (y + 1)] = data[y, x];
                 }
             }
-            for (int y = 0; y < 4; y++) {
-                for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < length; y++) {
+                for (int x = 0; x < length; x++) {
                     data[y, x] = tmp[y, x];
                 }
             }
         }
         
         public void rotate_left() {
-            uint8[,] tmp = new uint8[4, 4];
-            for (int y = 0; y < 4; y++) {
-                for (int x = 0; x < 4; x++) {
-                    tmp[3 - x, y] = data[y, x];
+            uint8[,] tmp = new uint8[length, length];
+            for (int y = 0; y < length; y++) {
+                for (int x = 0; x < length; x++) {
+                    tmp[length - (x + 1), y] = data[y, x];
                 }
             }
-            for (int y = 0; y < 4; y++) {
-                for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < length; y++) {
+                for (int x = 0; x < length; x++) {
                     data[y, x] = tmp[y, x];
                 }
             }
@@ -249,12 +222,12 @@ namespace Ahoris {
             falling = new FallingBlock.random_pattern();
             falling.position = Gdk.Point() {
                 x = size.x_length() / 2 - 2,
-                y = -4
+                y = -falling.length
             };
             falling_reserved = new FallingBlock.random_pattern();
             falling_reserved.position = Gdk.Point() {
                 x = size.x_length() / 2 - 2,
-                y = -4
+                y = -falling.length
             };
             reserve(falling_reserved);
             is_game_over = false;
@@ -367,8 +340,8 @@ namespace Ahoris {
         }
                 
         private bool can_go_down() {
-            for (int j = 3; j >= 0; j--) {
-                for (int i = 0; i < 4; i++) {
+            for (int j = falling.length - 1; j >= 0; j--) {
+                for (int i = 0; i < falling.length; i++) {
                     int y = falling.position.y + j;
                     int x = falling.position.x + i;
                     if (y < 0) {
@@ -388,8 +361,8 @@ namespace Ahoris {
         }
         
         private bool can_go_left() {
-            for (int i = 0; i < 4; i++) {
-                for (int j = 3; j >= 0; j--) {
+            for (int i = 0; i < falling.length; i++) {
+                for (int j = falling.length - 1; j >= 0; j--) {
                     int y = falling.position.y + j;
                     int x = falling.position.x + i;
                     if (falling.data[j, i] != 0) {
@@ -406,8 +379,8 @@ namespace Ahoris {
         }
         
         private bool can_go_right() {
-            for (int i = 3; i >= 0; i--) {
-                for (int j = 0; j < 4; j++) {
+            for (int i = falling.length - 1; i >= 0; i--) {
+                for (int j = 0; j < falling.length; j++) {
                     int y = falling.position.y + j;
                     int x = falling.position.x + i;
                     if (falling.data[j, i] != 0) {
@@ -424,8 +397,8 @@ namespace Ahoris {
         }
         
         private OverlappingState is_overlapped() {
-            for (int j = 0; j < 4; j++) {
-                for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < falling.length; j++) {
+                for (int i = 0; i < falling.length; i++) {
                     int y = falling.position.y + j;
                     int x = falling.position.x + i;
                     if (falling.data[j, i] != 0) {
@@ -443,8 +416,8 @@ namespace Ahoris {
         }
         
         private async void fix_falling() throws GameError {
-            for (int j = 0; j < 4; j++) {
-                for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < falling.length; j++) {
+                for (int i = 0; i < falling.length; i++) {
                     int y = falling.position.y + j;
                     int x = falling.position.x + i;
                     if (y < 0) {
@@ -465,7 +438,7 @@ namespace Ahoris {
             falling.is_falling = false;
             falling = falling_reserved;
             falling_reserved = new FallingBlock.random_pattern();
-            falling_reserved.position = { size.x_length() / 2 - 2, -4 };
+            falling_reserved.position = { size.x_length() / 2 - 2, -falling.length };
             changed();
             Idle.add(fix_falling.callback);
             yield;
@@ -726,7 +699,7 @@ namespace Ahoris {
                     if (model.falling.is_falling) {
                         int y = j - falling_position.y;
                         int x = i - falling_position.x;
-                        if (0 <= y && y < 4 && 0 <= x && x < 4 && model.falling.data[y, x] != 0) {
+                        if (0 <= y && y < model.falling.length && 0 <= x && x < model.falling.length && model.falling.data[y, x] != 0) {
                             block_drawer.move_to(j, i);
                             block_drawer.set_color(model.falling.base_color);
                             block_drawer.draw(cairo);
@@ -823,8 +796,8 @@ namespace Ahoris {
             cairo.fill();
             
             if (blocks != null) {
-                for (int j = 0; j < 4; j++) {
-                    for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < blocks.length; j++) {
+                    for (int i = 0; i < blocks.length; i++) {
                         if (blocks.data[j, i] != 0) {
                             block_drawer.move_to(j, i);
                             block_drawer.set_color(blocks.base_color);
