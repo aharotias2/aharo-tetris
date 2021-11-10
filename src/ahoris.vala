@@ -132,9 +132,9 @@ namespace Ahoris {
                 break;
               case 6:
                 ptr = {
-                    {0, 0, 0},
                     {1, 1, 1},
                     {0, 1, 0},
+                    {0, 0, 0},
                 };
                 base_color = { 0.75, 0.25, 0.75, 1.0 };
                 length = 3;
@@ -473,12 +473,12 @@ namespace Ahoris {
                     Timeout.add(200, fix_falling.callback);
                     yield;
                     bool move_completed = false;
+                    bool[,] memo = new bool[size.y_length(), size.x_length()];
                     while (!move_completed) {
-                        move_completed = yield move_down(v1, v2);
-                        changed();
-                        Timeout.add(50, fix_falling.callback);
-                        yield;
+                        move_completed = go_down(v1, v2, memo);
                     }
+                    Idle.add(fix_falling.callback);
+                    yield;
                     changed();
                     Timeout.add(200, fix_falling.callback);
                     yield;
@@ -522,18 +522,25 @@ namespace Ahoris {
             score_changed(score);
         }
 
-        private async bool move_down(int v1, int v2) {
+        private bool go_down(int v1, int v2, bool[,] memo) {
             bool[,] checker = new bool[size.y_length(), size.x_length()];
             for (int j = v1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (field[j, i].status == EMPTY) {
                         continue;
                     }
+                    if (memo[j, i]) {
+                        continue;
+                    }
                     if (is_surrounded_by_space(j, i, checker)) {
-                        int move_span = count_move_span(checker);
-                        if (move_span > 0) {
-                            move_down_span(checker, move_span);
-                        }
+                        overwrite_memo(memo, checker);
+                        Idle.add(() => {
+                            int move_span = count_move_span(checker);
+                            if (move_span > 0) {
+                                go_down_span(checker, move_span);
+                            }
+                            return false;
+                        });
                         return false;
                     }
                     checker = new bool[size.y_length(), size.x_length()];
@@ -541,16 +548,26 @@ namespace Ahoris {
             }
             return true;
         }
+
+        private void overwrite_memo(bool[,] memo, bool[,] checker) {
+            for (int j = 0; j < size.y_length(); j++) {
+                for (int i = 0; i < size.x_length(); i++) {
+                    if (checker[j, i]) {
+                        memo[j, i] = checker[j, i];
+                    }
+                }
+            }
+        }
         
         private int count_move_span(bool[,] checker) {
             int move_span = 1;
-            while (temp(checker, move_span)) {
+            while (can_go_down_span(checker, move_span)) {
                 move_span++;
             }
             return move_span - 1;
         }
         
-        private bool temp(bool[,] checker, int move_span) {
+        private bool can_go_down_span(bool[,] checker, int move_span) {
             for (int j = size.y_length() - 1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (checker[j, i]) {
@@ -568,7 +585,7 @@ namespace Ahoris {
             return true;
         }
         
-        private void move_down_span(bool[,] checker, int move_span) {
+        private void go_down_span(bool[,] checker, int move_span) {
             for (int j = size.y_length() - 1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (checker[j, i]) {
