@@ -96,7 +96,7 @@ namespace Ahoris {
                     {0, 0, 0, 0},
                     {0, 0, 0, 0}
                 };
-                base_color = { 0.5, 0.75, 0.75, 1.0 };
+                base_color = { 0.40, 0.60, 0.75, 1.0 };
                 length = 4;
                 break;
               case 1:
@@ -123,7 +123,7 @@ namespace Ahoris {
                     {0, 1, 0},
                     {0, 1, 0}
                 };
-                base_color = { 0.25, 0.25, 1.0, 1.0 };
+                base_color = { 0.25, 0.25, 0.75, 1.0 };
                 length = 3;
                 break;
               case 4:
@@ -132,7 +132,7 @@ namespace Ahoris {
                     {0, 1, 0},
                     {0, 1, 0}
                 };
-                base_color = { 0.75, 0.50, 0.25, 1.0 };
+                base_color = { 0.75, 0.60, 0.25, 1.0 };
                 length = 3;
                 break;
               case 5:
@@ -149,7 +149,7 @@ namespace Ahoris {
                     {0, 1, 0},
                     {0, 0, 0},
                 };
-                base_color = { 0.75, 0.25, 0.75, 1.0 };
+                base_color = { 0.75, 0.25, 0.60, 1.0 };
                 length = 3;
                 break;
             }
