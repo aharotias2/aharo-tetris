@@ -24,3 +24,12 @@ executable(
   install_dir: get_option('prefix') / 'bin'
 )
 
+install_data(
+  'data/icon-128.png', rename: 'com.github.aharotias2.ahoris.png',
+  install_dir: get_option('datadir') / 'share/icons/hicolor/128x128/apps'
+)
+
+install_data(
+  'data/com.github.aharotias2.ahoris.desktop',
+  install_dir: get_option('datadir') / 'share/applications'
+)
