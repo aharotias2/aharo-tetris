@@ -72,6 +72,19 @@ namespace Ahoris {
             init(Random.int_range(0, 7));
         }
         
+        public FallingBlock.clone_of(FallingBlock orig) {
+            data = new uint8[orig.length, orig.length];
+            length = orig.length;
+            base_color = orig.base_color;
+            position = orig.position;
+            for (int j = 0; j < orig.length; j++) {
+                for (int i = 0; i < orig.length; i++) {
+                    data[j, i] = orig.data[j, i];
+                }
+            }
+            is_falling = orig.is_falling;
+        }
+        
         private void init(int pattern_num) {
             uint8[,] ptr;
             switch (pattern_num % 7) {
@@ -262,54 +275,64 @@ namespace Ahoris {
         }
         
         public void turn_left() {
+            var save_falling = new FallingBlock.clone_of(falling);
             falling.rotate_left();
-            switch (is_overlapped()) {
-              case OVERLAPPED:
-                falling.rotate_right();
-                break;
-              case OVER_LEFT:
-                if (can_go_right()) {
-                    go_right();
-                } else {
-                    falling.rotate_right();
+            while (true) {
+                switch (is_overlapped()) {
+                  case OVERLAPPED:
+                    falling = save_falling;
+                    return;
+                  case OVER_LEFT:
+                    if (can_go_right()) {
+                        go_right();
+                    } else {
+                        falling = save_falling;
+                        return;
+                    }
+                    break;
+                  case OVER_RIGHT:
+                    if (can_go_left()) {
+                        go_left();
+                    } else {
+                        falling = save_falling;
+                        return;
+                    }
+                    break;
+                  default:
+                    changed();
+                    return;
                 }
-                break;
-              case OVER_RIGHT:
-                if (can_go_left()) {
-                    go_left();
-                } else {
-                    falling.rotate_right();
-                }
-                break;
-              default:
-                changed();
-                break;
             }
         }
         
         public void turn_right() {
+            var save_falling = new FallingBlock.clone_of(falling);
             falling.rotate_right();
-            switch (is_overlapped()) {
-              case OVERLAPPED:
-                falling.rotate_left();
-                break;
-              case OVER_LEFT:
-                if (can_go_right()) {
-                    go_right();
-                } else {
-                    falling.rotate_left();
+            while (true) {
+                switch (is_overlapped()) {
+                  case OVERLAPPED:
+                    falling = save_falling;
+                    return;
+                  case OVER_LEFT:
+                    if (can_go_right()) {
+                        go_right();
+                    } else {
+                        falling = save_falling;
+                        return;
+                    }
+                    break;
+                  case OVER_RIGHT:
+                    if (can_go_left()) {
+                        go_left();
+                    } else {
+                        falling = save_falling;
+                        return;
+                    }
+                    break;
+                  default:
+                    changed();
+                    return;
                 }
-                break;
-              case OVER_RIGHT:
-                if (can_go_left()) {
-                    go_left();
-                } else {
-                    falling.rotate_left();
-                }
-                break;
-              default:
-                changed();
-                break;
             }
         }
         
