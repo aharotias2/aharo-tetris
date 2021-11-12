@@ -45,7 +45,7 @@ namespace Ahoris {
     }
     
     public enum FieldStatus {
-        EMPTY, BLOCKED;
+        EMPTY, BLOCKED, LIGHTING;
     }
 
     public enum OverlappingState {
@@ -493,7 +493,7 @@ namespace Ahoris {
                 if (v2 > 0) {
                     yield erase_row(v3, bonus);
                     changed();
-                    Timeout.add(200, fix_falling.callback);
+                    Timeout.add(10, fix_falling.callback);
                     yield;
                     bool move_completed = false;
                     bool[,] memo = new bool[size.y_length(), size.x_length()];
@@ -503,7 +503,7 @@ namespace Ahoris {
                     Idle.add(fix_falling.callback);
                     yield;
                     changed();
-                    Timeout.add(200, fix_falling.callback);
+                    Timeout.add(250, fix_falling.callback);
                     yield;
                     
                     bonus *= 2;
@@ -529,6 +529,20 @@ namespace Ahoris {
         }
         
         private async void erase_row(bool[] v3, int bonus) {
+            bool onoff = true;
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < size.y_length(); j++) {
+                    if (v3[j]) {
+                        for (int x = 0; x < size.x_length(); x++) {
+                            field[j, x].status = onoff ? FieldStatus.LIGHTING : FieldStatus.BLOCKED;
+                        }
+                    }
+                }
+                onoff = !onoff;
+                changed();
+                Timeout.add(100, erase_row.callback);
+                yield;
+            }
             int middle = size.x_length() / 2;
             for (int x1 = middle, x2 = middle - 1; x1 < size.x_length(); x1++, x2--) {
                 for (int y = size.y_length() - 1; y >= 0; y--) {
@@ -557,12 +571,10 @@ namespace Ahoris {
                     }
                     if (is_surrounded_by_space(j, i, checker)) {
                         overwrite_memo(memo, checker);
-                        Idle.add(() => {
-                            int move_span = count_move_span(checker);
-                            if (move_span > 0) {
-                                go_down_span(checker, move_span);
-                            }
-                            return false;
+                        Timeout.add(30, () => {
+                            go_down_once(checker);
+                            changed();
+                            return can_go_down_once(checker);
                         });
                         return false;
                     }
@@ -582,23 +594,28 @@ namespace Ahoris {
             }
         }
         
-        private int count_move_span(bool[,] checker) {
-            int move_span = 1;
-            while (can_go_down_span(checker, move_span)) {
-                move_span++;
-            }
-            return move_span - 1;
-        }
-        
-        private bool can_go_down_span(bool[,] checker, int move_span) {
+        private void go_down_once(bool[,] checker) {
             for (int j = size.y_length() - 1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (checker[j, i]) {
-                        if ((j + move_span) >= size.y_length()) {
+                        field[j + 1, i] = field[j, i];
+                        field[j, i].status = EMPTY;
+                        checker[j + 1, i] = true;
+                        checker[j, i] = false;
+                    }
+                }
+            }
+        }
+        
+        private bool can_go_down_once(bool[,] checker) {
+            for (int j = size.y_length() - 1; j >= 0; j--) {
+                for (int i = 0; i < size.x_length(); i++) {
+                    if (checker[j, i]) {
+                        if ((j + 1) >= size.y_length()) {
                             return false;
                         }
-                        if (field[j + move_span, i].status != EMPTY) {
-                            if (!checker[j + move_span, i]) {
+                        if (field[j + 1, i].status != EMPTY) {
+                            if (!checker[j + 1, i]) {
                                 return false;
                             }
                         }
@@ -606,17 +623,6 @@ namespace Ahoris {
                 }
             }
             return true;
-        }
-        
-        private void go_down_span(bool[,] checker, int move_span) {
-            for (int j = size.y_length() - 1; j >= 0; j--) {
-                for (int i = 0; i < size.x_length(); i++) {
-                    if (checker[j, i]) {
-                        field[j + move_span, i] = field[j, i];
-                        field[j, i].status = EMPTY;
-                    }
-                }
-            }
         }
         
         private bool is_surrounded_by_space(int y, int x, bool[,] checker) {
@@ -733,7 +739,11 @@ namespace Ahoris {
                     cairo.fill();
                     if (model.get_status(j, i) != EMPTY) {
                         block_drawer.move_to(j, i);
-                        block_drawer.set_color(model.get_block_color(j, i));
+                        if (model.get_status(j, i) == LIGHTING) {
+                            block_drawer.set_color({1.0, 1.0, 1.0, 1.0});
+                        } else {
+                            block_drawer.set_color(model.get_block_color(j, i));
+                        }
                         block_drawer.draw(cairo);
                     }
                     if (model.falling.is_falling) {
