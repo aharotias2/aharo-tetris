@@ -263,6 +263,7 @@ namespace Ahoris {
                 Timeout.add(60000 / speed, start.callback);
                 yield;
             } while (!is_game_over);
+            game_over();
         }
         
         public void force_exit() {
@@ -863,6 +864,7 @@ namespace Ahoris {
 
 Gtk.ApplicationWindow create_window(Gtk.Application app) {
     try {
+        bool active_flag = true;
         var ahoris_model = new Ahoris.GameModel(MODEL_10X20);
         var window = new Gtk.ApplicationWindow(app);
         {
@@ -958,6 +960,8 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                     var reset_button = new Gtk.Button.with_label("リセットする");
                     {
                         reset_button.clicked.connect(() => {
+                            active_flag = false;
+                            ahoris_model.force_exit();
                             create_window(app);
                             window.close();
                         });
@@ -984,9 +988,12 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
             }
 
             ahoris_model.game_over.connect(() => {
-                var dialog = new Gtk.MessageDialog(window, MODAL, INFO, OK, "はいゲーム終了");
-                dialog.run();
-                dialog.close();
+                if (active_flag) {
+                    active_flag = false;
+                    var dialog = new Gtk.MessageDialog(window, MODAL, INFO, OK, "はいゲーム終了");
+                    dialog.run();
+                    dialog.close();
+                }
             });
             window.set_titlebar(headerbar);
             window.add(hbox1);
