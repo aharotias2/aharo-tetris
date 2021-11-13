@@ -422,21 +422,26 @@ namespace Ahoris {
                     return;
                   case OVER_LEFT:
                     if (can_go_right()) {
+                        // 左にはみ出して右に移動できる場合は右に移動する
                         go_right();
                     } else {
+                        // 左にはみ出して右に移動できない場合は回転しない (保存した状態に戻す)
                         falling = save_falling;
                         return;
                     }
                     break;
                   case OVER_RIGHT:
                     if (can_go_left()) {
+                        // 右にはみ出して左に移動できる場合は左に移動する
                         go_left();
                     } else {
+                        // 右にはみ出して左に移動できない場合は保存した状態に戻す (回転しない)
                         falling = save_falling;
                         return;
                     }
                     break;
                   default:
+                    // それ以外の場合は反時計回り90°回転だけする
                     changed();
                     return;
                 }
@@ -477,7 +482,7 @@ namespace Ahoris {
                     }
                     break;
                   default:
-                    // それ以外の場合は右に回転だけする。
+                    // それ以外の場合は時計回り90°回転だけする。
                     changed();
                     return;
                 }
@@ -882,46 +887,56 @@ namespace Ahoris {
          */
         private bool is_surrounded_by_space(int y, int x, bool[,] checker) {
             if (field[y, x].status == EMPTY) {
+                // ここには再帰呼び出しでのみ来る
                 return true;
             } else if (y == size.y_length() - 1) {
+                // ブロックが着地している場合、浮いていない判定になる。
                 checker[y, x] = true;
                 return false;
             } else {
                 checker[y, x] = true;
                 
+                // 下を検査する
                 if (y == size.y_length() - 1) {
-                    // do nothing.
+                    // 着地している場合、浮いていない判定になる
                     return false;
                 } else if (!checker[y + 1, x]) {
                     if (!is_surrounded_by_space(y + 1, x, checker)) {
+                        // このブロックに隣接するブロックを再帰的に辿っていき
+                        // 着地した場合は浮いていない判定となる。
+                        // 他の方向への検査の場合も同様
                         return false;
                     }
                 }
                 
+                // 右を検査する
                 if (x == size.x_length() - 1) {
-                    // do nothing.
+                    // ブロックが右端にある場合、検査しない
                 } else if (!checker[y, x + 1]) {
                     if (!is_surrounded_by_space(y, x + 1, checker)) {
                         return false;
                     }
                 }
                 
+                // 左を検査する
                 if (x == 0) {
-                    // do nothing.
+                    // ブロックが左端にある場合、検査しない
                 } else if (!checker[y, x - 1]) {
                     if (!is_surrounded_by_space(y, x - 1, checker)) {
                         return false;
                     }
                 }
 
+                // 上を検査する
                 if (y == 0) {
-                    // do nothing.
+                    // ブロックが上限にある場合は検査しない
                 } else if (!checker[y - 1, x]) {
                     if (!is_surrounded_by_space(y - 1, x, checker)) {
                         return false;
                     }
                 }
 
+                // 上下左右どの方向から辿っても着地しない場合は浮いている判定となる
                 return true;
             }
         }
