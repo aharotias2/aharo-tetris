@@ -673,14 +673,8 @@ namespace Ahoris {
             int bonus = 1;
             
             while (true) {
-                
+                // 消す行があるかどうかのフラグ
                 is_erased = false;
-                
-                // 最も下にある消す行
-                int v1 = -1;
-                
-                // 最も下にある消す行を記録したかどうかのフラグ
-                bool flag = true;
 
                 // 消す行をtrueにして後で使う
                 bool[] selection = new bool[size.y_length()];
@@ -688,10 +682,6 @@ namespace Ahoris {
                 // 消せる行を探してselectionを設定する
                 for (int j = size.y_length() - 1; j >= 0; j--) {
                     if (can_erase_row(j)) {
-                        if (flag) {
-                            v1 = j;
-                            flag = false;
-                        }
                         selection[j] = true;
                         
                         // 消せる行が増えるとボーナス得点になる (仕様がよく決まってない)
@@ -723,7 +713,7 @@ namespace Ahoris {
 
                 // 全てのブロックの落下が完了するまで繰り返す
                 while (!move_completed) {
-                    move_completed = go_down(v1, memo);
+                    move_completed = go_down(memo);
                 }
 
                 Idle.add(fix_falling.callback);
@@ -797,9 +787,9 @@ namespace Ahoris {
          * 正確には落下の「予約」をする。
          * あとで非同期的に落下させる
          */
-        private bool go_down(int v1, bool[,] memo) {
+        private bool go_down(bool[,] memo) {
             bool[,] checker = new bool[size.y_length(), size.x_length()];
-            for (int j = v1; j >= 0; j--) {
+            for (int j = size.y_length() - 1; j >= 0; j--) {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (field[j, i].status == EMPTY) {
                         // ブロックがないところは飛ばす
@@ -831,9 +821,7 @@ namespace Ahoris {
         private void overwrite_memo(bool[,] memo, bool[,] checker) {
             for (int j = 0; j < size.y_length(); j++) {
                 for (int i = 0; i < size.x_length(); i++) {
-                    if (checker[j, i]) {
-                        memo[j, i] = checker[j, i];
-                    }
+                    memo[j, i] |= checker[j, i];
                 }
             }
         }
@@ -889,6 +877,9 @@ namespace Ahoris {
             if (field[y, x].status == EMPTY) {
                 // ここには再帰呼び出しでのみ来る
                 return true;
+            } else if (checker[y, x]) {
+                // 検査済みの場合はtrueを返す
+                return true;
             } else if (y == size.y_length() - 1) {
                 // ブロックが着地している場合、浮いていない判定になる。
                 checker[y, x] = true;
@@ -900,40 +891,32 @@ namespace Ahoris {
                 if (y == size.y_length() - 1) {
                     // 着地している場合、浮いていない判定になる
                     return false;
-                } else if (!checker[y + 1, x]) {
-                    if (!is_surrounded_by_space(y + 1, x, checker)) {
-                        // このブロックに隣接するブロックを再帰的に辿っていき
-                        // 着地した場合は浮いていない判定となる。
-                        // 他の方向への検査の場合も同様
-                        return false;
-                    }
+                } else if (!is_surrounded_by_space(y + 1, x, checker)) {
+                    // このブロックに隣接するブロックを再帰的に辿っていき
+                    // 着地した場合は浮いていない判定となる。
+                    // 他の方向への検査の場合も同様
+                    return false;
                 }
                 
                 // 右を検査する
                 if (x == size.x_length() - 1) {
                     // ブロックが右端にある場合、検査しない
-                } else if (!checker[y, x + 1]) {
-                    if (!is_surrounded_by_space(y, x + 1, checker)) {
-                        return false;
-                    }
+                } else if (!is_surrounded_by_space(y, x + 1, checker)) {
+                    return false;
                 }
                 
                 // 左を検査する
                 if (x == 0) {
                     // ブロックが左端にある場合、検査しない
-                } else if (!checker[y, x - 1]) {
-                    if (!is_surrounded_by_space(y, x - 1, checker)) {
-                        return false;
-                    }
+                } else if (!is_surrounded_by_space(y, x - 1, checker)) {
+                    return false;
                 }
 
                 // 上を検査する
                 if (y == 0) {
                     // ブロックが上限にある場合は検査しない
-                } else if (!checker[y - 1, x]) {
-                    if (!is_surrounded_by_space(y - 1, x, checker)) {
-                        return false;
-                    }
+                } else if (!is_surrounded_by_space(y - 1, x, checker)) {
+                    return false;
                 }
 
                 // 上下左右どの方向から辿っても着地しない場合は浮いている判定となる
