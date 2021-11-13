@@ -1001,19 +1001,19 @@ namespace Ahoris {
                                 block_drawer.move_to(j, i);
                                 block_drawer.set_color(model.falling.base_color);
                                 block_drawer.draw(cairo);
+                                continue;
                             }
-                        } else {
-                            // 各位置の背景にあるドットを描写する
-                            cairo.set_source_rgba(field_bgcolor.red * 1.2, field_bgcolor.green * 1.2, field_bgcolor.blue * 1.2, 1.0);
-                            cairo.arc(
-                                border_width + ((block_width + border_width) * i) + (block_width / 2.0),
-                                border_width + ((block_height + border_width) * j) + (block_height / 2.0),
-                                2.0,
-                                0.0,
-                                Math.PI * 2.0
-                            );
-                            cairo.fill();
                         }
+                        // 各位置の背景にあるドットを描写する
+                        cairo.set_source_rgba(field_bgcolor.red * 1.2, field_bgcolor.green * 1.2, field_bgcolor.blue * 1.2, 1.0);
+                        cairo.arc(
+                            border_width + ((block_width + border_width) * i) + (block_width / 2.0),
+                            border_width + ((block_height + border_width) * j) + (block_height / 2.0),
+                            2.0,
+                            0.0,
+                            Math.PI * 2.0
+                        );
+                        cairo.fill();
                     } else {
                         // 置かれているブロックを描写する
                         block_drawer.move_to(j, i);
