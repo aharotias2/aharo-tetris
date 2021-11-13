@@ -672,7 +672,7 @@ namespace Ahoris {
                 is_erased = false;
                 
                 // 最も下にある消す行
-                int v1 = j;
+                int v1 = -1;
                 
                 // 最も下にある消す行を記録したかどうかのフラグ
                 bool flag = true;
