@@ -42,12 +42,12 @@ AppImage
 ----------------------------------------------------------------------------------------------------
 すぐに実行可能なAppImageは以下のリンクからダウンロード可能でありやす。
 
-<https://drive.google.com/file/d/1Z5six2X-W5DD3qSOuVr_Zr2OgGP5s7GM/view?usp=sharing>
+<https://drive.google.com/file/d/1xX6WnON27ITSIDwTodibBqQYOaP8BvfN/view?usp=sharing>
 
 チェックサム
 
-* md5sum: 3537017b0ebdaa51d9c95cd7c0c2b7ad
-* sha256sum: ca3307fd510a7ea87656c15837bcb9b96d050830fe231775c0a42dfcf795c14b
+* md5sum: 7705a4ca112c94d26b93ff35f78ee40c
+* sha256sum: f1c6c0476674465189ca04751e30ce9e94942517e939352ece2cf3e8e1efc798
 
 ----------------------------------------------------------------------------------------------------
 

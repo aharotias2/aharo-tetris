@@ -339,6 +339,7 @@ namespace Ahoris {
         private bool is_game_over;
         private FieldBlock[,] field;
         private bool is_paused;
+        private int waiting_count;
         
         public GameModel(ModelSize size) {
             reset_by_size(size);
@@ -711,13 +712,22 @@ namespace Ahoris {
                 // その時何度も同じブロックを検査しないように検査したブロックの位置をmemoに保存する
                 bool[,] memo = new bool[size.y_length(), size.x_length()];
 
-                // 全てのブロックの落下が完了するまで繰り返す
+                waiting_count = 0;
+                
+                // 行が消えたことで落ちるブロックを探索する
                 while (!move_completed) {
                     move_completed = go_down(memo);
                 }
 
                 Idle.add(fix_falling.callback);
                 yield;
+                
+                // 全ての落下が完了するまで待つ
+                while (waiting_count > 0) {
+                    Timeout.add(30, fix_falling.callback);
+                    yield;
+                }
+                
                 changed();
                 Timeout.add(250, fix_falling.callback);
                 yield;
@@ -800,6 +810,7 @@ namespace Ahoris {
                         continue;
                     }
                     if (is_surrounded_by_space(j, i, checker)) {
+                        waiting_count++;
                         overwrite_memo(memo, checker);
                         // ここでTimeoutを使う理由は先に落下させてしまうと他の位置にある落下させられるブロック
                         // に触れてしまう場合、それを止めてしまうため、
@@ -807,7 +818,12 @@ namespace Ahoris {
                         Timeout.add(30, () => {
                             go_down_once(checker);
                             changed();
-                            return can_go_down_once(checker);
+                            if (can_go_down_once(checker)) {
+                                return true;
+                            } else {
+                                waiting_count--;
+                                return false;
+                            }
                         });
                         return false;
                     }
