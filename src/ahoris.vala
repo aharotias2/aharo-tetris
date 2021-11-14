@@ -619,7 +619,7 @@ namespace Ahoris {
                             return OVER_LEFT;
                         } else if (x >= size.x_length()) {
                             return OVER_RIGHT;
-                        } else if (field[y, x].status != EMPTY) {
+                        } else if (y >= 0 && field[y, x].status != EMPTY) {
                             return OVERLAPPED;
                         }
                     }
