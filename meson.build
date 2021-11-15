@@ -13,6 +13,8 @@ executable(
   'com.github.aharotias2.Ahoris',
   [
     'src/ahoris.vala',
+    'src/labelbuilder.vala',
+    'src/stopwatch.vala',
     resources
   ],
   dependencies: [

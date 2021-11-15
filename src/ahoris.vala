@@ -200,7 +200,7 @@ namespace Ahoris {
                     {0, 0, 0, 0},
                     {0, 0, 0, 0}
                 };
-                base_color = { 0.40, 0.60, 0.75, 1.0 };
+                base_color = { 0.50, 0.60, 0.80, 1.0 };
                 length = 4;
                 break;
               case 1:
@@ -220,7 +220,7 @@ namespace Ahoris {
                     {0, 1, 1},
                     {1, 1, 0},
                 };
-                base_color = { 0.25, 0.75, 0.25, 1.0 };
+                base_color = { 0.35, 0.60, 0.40, 1.0 };
                 length = 3;
                 break;
               case 3:
@@ -240,7 +240,7 @@ namespace Ahoris {
                     {0, 1, 0},
                     {0, 1, 0}
                 };
-                base_color = { 0.75, 0.60, 0.25, 1.0 };
+                base_color = { 0.75, 0.50, 0.25, 1.0 };
                 length = 3;
                 break;
               case 5:
@@ -322,9 +322,11 @@ namespace Ahoris {
     public class GameModel : Object {
         public signal void reserve(FallingBlock falling_reserved);
         public signal void changed();
-        public signal void score_changed(int score);
+        public signal void score_changed(int current_score, int new_score, int bonus);
+        public signal void lines_changed(int current_lines, int new_lines);
         public signal void game_over();
 
+        public int lines { get; private set; default = 0; }
         public ModelSize size { get; private set; }
         public int speed { get; set; default = 90; }
         public FallingBlock falling { get; private set; }
@@ -686,7 +688,7 @@ namespace Ahoris {
                         selection[j] = true;
                         
                         // 消せる行が増えるとボーナス得点になる (仕様がよく決まってない)
-                        bonus++;
+                        //bonus++;
                         
                         is_erased = true;
                     }
@@ -776,20 +778,54 @@ namespace Ahoris {
             }
             
             // 行を消す
+            int n1 = 0;
+            int n2 = 0;
+            int n3 = 0;
             int middle = size.x_length() / 2;
             for (int x1 = middle, x2 = middle - 1; x1 < size.x_length(); x1++, x2--) {
                 for (int y = size.y_length() - 1; y >= 0; y--) {
                     if (selection[y]) {
                         field[y, x1].status = EMPTY;
                         field[y, x2].status = EMPTY;
-                        score += bonus;
+                        //score += bonus;
+                        if (x2 == 0) {
+                            n1++;
+                            if (n2 > 0) {
+                                n3++;
+                            }
+                        }
+                    } else if (x2 == 2 && n1 > 0) {
+                        n2++;
                     }
                 }
                 changed();
                 Timeout.add(20, erase_row.callback);
                 yield;
             }
-            score_changed(score);
+            int new_score = 0;
+            if (n1 == 1) {
+                new_score = 400;
+            } else if (n3 == 0) {
+                if (n1 == 2) {
+                    new_score = 1000;
+                } else if (n1 == 3) {
+                    new_score = 1500;
+                } else if (n1 == 4) {
+                    new_score = 2000;
+                }
+            } else if (n3 == 1) {
+                if (n1 == 2) {
+                    new_score = 1500;
+                } else if (n1 == 3) {
+                    new_score = 2000;
+                }
+            } else if (n3 == 2) {
+                new_score = 2500;
+            }
+            score += new_score * bonus;
+            score_changed(score, new_score, bonus);
+            lines += n1;
+            lines_changed(lines, n1);
         }
 
         /**
@@ -813,8 +849,10 @@ namespace Ahoris {
                         waiting_count++;
                         overwrite_memo(memo, checker);
                         // ここでTimeoutを使う理由は先に落下させてしまうと他の位置にある落下させられるブロック
-                        // に触れてしまう場合、それを止めてしまうため、
-                        // 予約しておくことで行が消えた時点で浮いている全てのブロックを確実に落下させる
+                        // に触れてしまう場合、それを止めてしまうので、
+                        // 予約しておくことで行が消えた時点で浮いている全てのブロックを確実に落下させるため。
+                        // また、そうすることで浮いているブロックの塊が何個あってもそれぞれ独立して落ちるので、
+                        // 連鎖反応を起こすことができるようになる。
                         Timeout.add(30, () => {
                             go_down_once(checker);
                             changed();
@@ -1149,6 +1187,93 @@ namespace Ahoris {
             return true;
         }
     }
+    
+    public class ScoreBoard : Gtk.Box {
+        public string label {
+            get {
+                return label_value;
+            }
+            set {
+                label_value = value;
+                label_widget.label = label_value;
+            }
+        }
+        
+        public int score {
+            get {
+                return score_value;
+            }
+            set {
+                score_value = value;
+                change_score();
+            }
+        }
+        
+        public int length { get; construct; default = 8; }
+        private Gtk.Stack[] stacks;
+        private Gtk.Label label_widget;
+        private int score_value;
+        private string label_value;
+        private Pango.AttrList attr_list;
+        
+        public ScoreBoard(string label, int length) {
+            Object(
+                label: label,
+                length: length
+            );
+        }
+        
+        construct {
+            attr_list = LabelBuilder.create()
+                    .size(14)
+                    .weight(BOLD)
+                    .attrlist();
+            
+            label_widget = new Gtk.Label("") {
+                attributes = attr_list
+            };
+            
+            pack_start(label_widget, false, false);
+
+            stacks = new Gtk.Stack[length];
+            
+            for (int i = 0; i < length; i++) {
+                stacks[i] = new Gtk.Stack();
+                {
+                    for (int j = 0; j < 10; j++) {
+                        var num_label = new Gtk.Label(j.to_string()) {
+                            attributes = attr_list
+                        };
+                        stacks[i].add_named(num_label, j.to_string());
+                    }
+                    
+                    stacks[i].transition_type = SLIDE_DOWN;
+                    stacks[i].visible_child_name = "0";
+                }
+                
+                pack_end(stacks[i], false, false);
+            }
+            
+            hexpand = false;
+            halign = CENTER;
+        }
+        
+        private void change_score() {
+            string ns = (score_value % 10).to_string();
+            if (stacks[0].visible_child_name != ns) {
+                stacks[0].visible_child_name = ns;
+            }
+            for (int i = 1; i < length; i++) {
+                int n = score_value;
+                n /= (int) Math.pow(10.0, (double) i);
+                n %= 10;
+                ns = n.to_string();
+                if (stacks[i].visible_child_name != ns) {
+                    stacks[i].visible_child_name = ns;
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -1163,6 +1288,8 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
         
         // ゲームモデルの初期化。
         var ahoris_model = new Ahoris.GameModel(MODEL_10X20);
+        Ahoris.GameWidget ahoris_widget;
+        Ahoris.StopWatch stop_watch;
         
         // ウィンドウを生成
         var window = new Gtk.ApplicationWindow(app);
@@ -1176,22 +1303,52 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
             }
 
             var hbox1 = new Gtk.Box(HORIZONTAL, 8);
-            {            
-                var ahoris_widget = new Ahoris.GameWidget.with_model(ahoris_model);
+            {
+                var vbox2 = new Gtk.Box(VERTICAL, 8);
                 {
-                    ahoris_model.changed.connect(() => {
-                        ahoris_widget.queue_draw();
-                    });
+                    var lines_board = new Ahoris.ScoreBoard("Lines:", 5);
+                    {
+                        ahoris_model.lines_changed.connect((lines, new_lines) => {
+                            lines_board.score = lines;
+                        });
+                    }
+                    
+                    ahoris_widget = new Ahoris.GameWidget.with_model(ahoris_model);
+                    {
+                        ahoris_model.changed.connect(() => {
+                            ahoris_widget.queue_draw();
+                        });
 
+                    }
+
+                    vbox2.pack_start(lines_board, false, false);
+                    vbox2.pack_start(ahoris_widget, false, false);
                 }
-
+                
                 var vbox1 = new Gtk.Box(VERTICAL, 8);
                 {
-                    var score_board = new Gtk.Label("Score: 0");
+                    var hbox2 = new Gtk.Box(HORIZONTAL, 5);
                     {
-                        ahoris_model.score_changed.connect((score) => {
-                            score_board.label = @"Score: $(score)";
-                            score_board.queue_draw();
+                        var stop_watch_label = Ahoris.LabelBuilder.create()
+                                .size(14)
+                                .weight(BOLD)
+                                .label("Time:")
+                                .build();
+                        
+                        stop_watch = new Ahoris.StopWatch();
+                        {
+                            stop_watch.halign = END;
+                            stop_watch.run.begin();
+                        }
+                        
+                        hbox2.pack_start(stop_watch_label, false, false);
+                        hbox2.pack_end(stop_watch, false, false);
+                    }
+                    
+                    var score_board = new Ahoris.ScoreBoard("Score:", 8);
+                    {
+                        ahoris_model.score_changed.connect((score, new_score, bonus) => {
+                            score_board.score = score;
                         });
                     }
 
@@ -1275,6 +1432,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         });
                     }
 
+                    vbox1.pack_start(hbox2, false, false);
                     vbox1.pack_start(score_board, false, false);
                     vbox1.pack_start(reserved_display, false, false);
                     vbox1.pack_start(description_grid, false, false);
@@ -1283,7 +1441,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                     vbox1.height_request = ahoris_widget.height_request;
                 }
 
-                hbox1.pack_start(ahoris_widget, false, false);
+                hbox1.pack_start(vbox2, false, false);
                 hbox1.pack_start(vbox1, false, false);
                 hbox1.margin = 6;
             }
@@ -1293,6 +1451,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                     // ブロックが上限に達して終了した場合はメッセージを表示する。
                     // リセットボタンを押して終了した場合はここを通過しない。
                     active_flag = false;
+                    stop_watch.stop();
                     var dialog = new Gtk.MessageDialog(window, MODAL, INFO, OK, "はいゲーム終了");
                     dialog.run();
                     dialog.close();
@@ -1342,7 +1501,6 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
         printerr(@"ERROR: $(e.message)\n");
         Process.exit(e.code);
     }
-    
 }
 
 int main(string[] argv) {
