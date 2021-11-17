@@ -364,6 +364,7 @@ namespace Ahoris {
         private FieldBlock[,] field;
         private bool is_paused;
         private int waiting_count;
+        private int additional_score;
         
         public GameModel(ModelSize size) {
             reset_by_size(size);
@@ -518,6 +519,10 @@ namespace Ahoris {
          * 一段下に下がる
          */
         public void go_down_fast() throws GameError {
+            if (is_paused) {
+                return;
+            }
+            
             if (can_go_down()) {
                 falling.position.y++;
                 changed();
@@ -680,7 +685,7 @@ namespace Ahoris {
                             base_color = falling.base_color
                         };
                         score += level;
-                        score_changed(score, level, 1);
+                        score_changed(score, 1, level);
                     }
                 }
             }
@@ -739,7 +744,9 @@ namespace Ahoris {
                 bool[,] memo = new bool[size.y_length(), size.x_length()];
 
                 waiting_count = 0;
-                
+
+                additional_score = 0;
+                                
                 // 行が消えたことで落ちるブロックを探索する
                 while (!move_completed) {
                     move_completed = go_down(memo);
@@ -755,6 +762,10 @@ namespace Ahoris {
                 }
                 
                 changed();
+
+                score += additional_score;
+                score_changed(score, additional_score, 1);
+                
                 Timeout.add(250, fix_falling.callback);
                 yield;
 
@@ -909,7 +920,6 @@ namespace Ahoris {
 
         // 検査済みのブロックの位置をマークする。(マーク済みのリストに追加する)
         private void overwrite_memo(bool[,] memo, bool[,] checker) {
-            int additional_score = 0;
             for (int j = 0; j < size.y_length(); j++) {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (checker[j, i]) {
@@ -921,9 +931,6 @@ namespace Ahoris {
                     }
                 }
             }
-
-            score += additional_score;
-            score_changed(score, level, 1);
         }
         
         // 落ちているブロックを一段下に下げる。
