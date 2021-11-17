@@ -23,7 +23,7 @@ namespace Ahoris {
         /** プログラムのロジックに矛盾があり、通れないはずのフローに入った場合、この例外を投げる。 */
         LOGICAL_ERROR
     }
-    
+
     /**
      * モデルのサイズはゲームフィールドの縦と横の長さを定義します。
      * 横10縦20しか使っていませんが特に意味もなく15x30も用意しています(使っていません)。
@@ -33,7 +33,7 @@ namespace Ahoris {
          * 縦20、横10のモデル
          */
         MODEL_10X20,
-        
+
         /**
          * 縦30、横15のモデル (使っていない)
          */
@@ -41,7 +41,7 @@ namespace Ahoris {
 
         /**
          * 横の「マス」の数を返します。(通常10)
-         */        
+         */
         public int x_length() {
             switch (this) {
               default:
@@ -54,7 +54,7 @@ namespace Ahoris {
 
         /**
          * 縦の「マス」の数を返します。(通常20)
-         */        
+         */
         public int y_length() {
             switch (this) {
               default:
@@ -85,21 +85,21 @@ namespace Ahoris {
         // 二つのシングル (二行開け)
         public const int TWO_SPLIT = 900;
     }
-    
+
     /**
      * フィールド内の状態を表します。
-     */    
+     */
     public enum FieldStatus {
         /**
          * 空である。(ブロックが置かれていない)
          */
         EMPTY,
-        
+
         /**
          * ブロックが置かれている。
          */
         BLOCKED,
-        
+
         /**
          * 行が消える時にはフラッシュ効果のためこの状態にする。
          */
@@ -115,23 +115,23 @@ namespace Ahoris {
          * 落ちてくるブロックが置かれているブロックに重なっていない状態
          */
         NOT_OVERLAPPED,
-        
+
         /**
          * 落ちてくるブロックがフィールドの左にはみ出している状態
          */
         OVER_LEFT,
-        
+
         /**
          * 落ちてくるブロックがフィールドに置かれたブロックと重なっている状態
          */
         OVERLAPPED,
-        
+
         /**
          * 落ちてくるブロックがフィールドの右にはみ出している状態
          */
         OVER_RIGHT
     }
-    
+
     /**
      * フィールドの各位置の状態を保持する。
      */
@@ -140,7 +140,7 @@ namespace Ahoris {
          * 状態
          */
         public FieldStatus status;
-        
+
         /**
          * ブロックが置かれている場合、そのブロックの色を表す
          */
@@ -155,42 +155,42 @@ namespace Ahoris {
          * 落ちているブロック縦横の最大長。
          */
         public int length;
-        
+
         /**
          * 落ちているブロックの形状を表す
          * 1はブロックがある状態、0はブロックがない状態を表す
          */
         public uint8[,] data;
-        
+
         /**
          * 落ちているブロックの色を保持する
          */
         public Gdk.RGBA base_color;
-        
+
         /**
          * 落ちているブロックのxy座標を表す
          */
         public Gdk.Point position;
-        
+
         /**
          * 落ちているブロックが着地していない場合true、着地した場合はfalse
          */
         public bool is_falling;
-        
+
         /**
          * 形状の番号を指定して落ちているブロックを作成する
          */
         public FallingBlock(int pattern_num) {
             init(pattern_num);
         }
-        
+
         /**
          * ランダムな形状の落ちているブロックを作成する
          */
         public FallingBlock.random_pattern() {
             init(Random.int_range(0, 7));
         }
-        
+
         /**
          * 引数origと同じ状態のインスタンスを作成する
          */
@@ -206,7 +206,7 @@ namespace Ahoris {
             }
             is_falling = orig.is_falling;
         }
-        
+
         private void init(int pattern_num) {
             // 落ちているブロックの形状を決定する
             uint8[,] ptr;
@@ -291,16 +291,16 @@ namespace Ahoris {
                     data[y, x] = ptr[y, x];
                 }
             }
-            
+
             // ランダムな回数分、回転する。
             int random_value = Random.int_range(0, 4);
             for (int i = 0; i < random_value; i++) {
                 rotate_right();
             }
-            
+
             is_falling = true;
         }
-        
+
         /**
          * 落ちているブロックを時計回りに回転させる
          */
@@ -317,7 +317,7 @@ namespace Ahoris {
                 }
             }
         }
-        
+
         /**
          * 落ちているブロックを反時計回りに回転させる
          */
@@ -338,7 +338,7 @@ namespace Ahoris {
 
     /**
      * ゲームの状態を管理するオブジェクトのクラス
-     */    
+     */
     public class GameModel : Object {
         public signal void reserve(FallingBlock falling_reserved);
         public signal void changed();
@@ -365,19 +365,19 @@ namespace Ahoris {
         private bool is_paused;
         private int waiting_count;
         private int additional_score;
-        
+
         public GameModel(ModelSize size) {
             reset_by_size(size);
         }
-        
+
         public FieldStatus get_status(int y, int x) {
             return field[y, x].status;
         }
-        
+
         public Gdk.RGBA get_block_color(int y, int x) {
             return field[y, x].base_color;
         }
-        
+
         public Gdk.Point get_falling_position() {
             return falling.position;
         }
@@ -385,7 +385,7 @@ namespace Ahoris {
         /**
          * ゲームルーチンを開始するメソッド
          * 終了するまで、非同期的に動作し続ける。
-         */        
+         */
         public async void start() throws GameError {
             falling = new FallingBlock.random_pattern();
             falling.position = Gdk.Point() {
@@ -420,19 +420,19 @@ namespace Ahoris {
             } while (!is_game_over);
             game_over();
         }
-        
+
         public void force_exit() {
             is_game_over = true;
         }
 
         /**
          * ゲームフィールドをリセットする。
-         */        
+         */
         public void reset_by_size(ModelSize size) {
             this.size = size;
             this.field = new FieldBlock[size.y_length(), size.x_length()];
         }
-        
+
         /**
          * 落ちているブロックを反時計周りに90°回転させる
          */
@@ -473,7 +473,7 @@ namespace Ahoris {
                 }
             }
         }
-        
+
         /**
          * 落ちているブロックを時計回りに90°回転させる
          */
@@ -514,7 +514,7 @@ namespace Ahoris {
                 }
             }
         }
-        
+
         /**
          * 一段下に下がる
          */
@@ -522,7 +522,7 @@ namespace Ahoris {
             if (is_paused) {
                 return;
             }
-            
+
             if (can_go_down()) {
                 falling.position.y++;
                 changed();
@@ -533,7 +533,7 @@ namespace Ahoris {
                 });
             }
         }
-        
+
         /**
          * 左に移動する
          */
@@ -543,7 +543,7 @@ namespace Ahoris {
                 changed();
             }
         }
-        
+
         /**
          * 右に移動する
          */
@@ -556,7 +556,7 @@ namespace Ahoris {
 
         /**
          * 落ちているブロックが下に移動できるかを判定する
-         */                
+         */
         private bool can_go_down() {
             for (int j = falling.length - 1; j >= 0; j--) {
                 for (int i = 0; i < falling.length; i++) {
@@ -581,7 +581,7 @@ namespace Ahoris {
             // それ以外の場合は移動できる。
             return true;
         }
-        
+
         /**
          * 落ちているブロックが左に移動できるかを判定する。
          */
@@ -605,7 +605,7 @@ namespace Ahoris {
             // それ以外の場合は移動できる
             return true;
         }
-        
+
         /**
          * 落ちているブロックが右に移動できるかを判定する
          */
@@ -629,11 +629,11 @@ namespace Ahoris {
             // それ以外の場合は移動できる
             return true;
         }
-        
+
         /**
          * 落ちているブロックが置いてあるブロックと重なるところがあるかを判定する
          * あるいは、フィールドの左右にはみ出していないかも判定する。
-         * 
+         *
          * OverlappingState.OVER_LEFT: 左にはみ出している
          * OverlappingState.OVERRIGHT: 右にはみ出している
          * OverlappingState.OVERLAPPED: 置いてあるブロックと重なっている
@@ -657,7 +657,7 @@ namespace Ahoris {
             }
             return NOT_OVERLAPPED;
         }
-        
+
         /**
          * 落ちているブロックを固定する。
          * 固定し終わったら消して良い行があるか判定して、
@@ -689,7 +689,7 @@ namespace Ahoris {
                     }
                 }
             }
-            
+
             // 新しく落ちてくるブロックを生成する
             falling.is_falling = false;
             falling = falling_reserved;
@@ -700,10 +700,10 @@ namespace Ahoris {
             yield;
 
             // 行を消す処理を開始する。
-            
+
             bool is_erased = false;
             int bonus = 1;
-            
+
             while (true) {
                 // 消す行があるかどうかのフラグ
                 is_erased = false;
@@ -715,19 +715,19 @@ namespace Ahoris {
                 for (int j = size.y_length() - 1; j >= 0; j--) {
                     if (can_erase_row(j)) {
                         selection[j] = true;
-                        
+
                         // 消せる行が増えるとボーナス得点になる (仕様がよく決まってない)
                         //bonus++;
-                        
+
                         is_erased = true;
                     }
                 }
-                
+
                 if (!is_erased) {
                     // 消す行がなくなったらループを抜ける。
                     break;
                 }
-                
+
                 // 行を消す時はチカチカエフェクトなどがあるので非同期で呼び出す
                 yield erase_row(selection, bonus);
 
@@ -746,7 +746,7 @@ namespace Ahoris {
                 waiting_count = 0;
 
                 additional_score = 0;
-                                
+
                 // 行が消えたことで落ちるブロックを探索する
                 while (!move_completed) {
                     move_completed = go_down(memo);
@@ -754,24 +754,24 @@ namespace Ahoris {
 
                 Idle.add(fix_falling.callback);
                 yield;
-                
+
                 // 全ての落下が完了するまで待つ
                 while (waiting_count > 0) {
                     Timeout.add(30, fix_falling.callback);
                     yield;
                 }
-                
+
                 changed();
 
                 score += additional_score;
                 score_changed(score, additional_score, 1);
-                
+
                 Timeout.add(250, fix_falling.callback);
                 yield;
 
                 // ボーナス得点を加算する (このところの仕様はよく決まってない)
                 bonus *= 2;
-                
+
             }
 
             if (!can_continue()) {
@@ -781,7 +781,7 @@ namespace Ahoris {
 
             reserve(falling_reserved);
         }
-        
+
         private bool can_erase_row(int y) {
             for (int x = 0; x < size.x_length(); x++) {
                 if (field[y, x].status == EMPTY) {
@@ -790,7 +790,7 @@ namespace Ahoris {
             }
             return true;
         }
-        
+
         /**
          * 引数selectionによって選択された行を消す。
          * 消す時にチカチカするエフェクトをかける。
@@ -811,7 +811,7 @@ namespace Ahoris {
                 Timeout.add(100, erase_row.callback);
                 yield;
             }
-            
+
             // 行を消す
             int n1 = 0;
             int n2 = 0;
@@ -924,7 +924,7 @@ namespace Ahoris {
                 for (int i = 0; i < size.x_length(); i++) {
                     if (checker[j, i]) {
                         memo[j, i] = true;
-                        
+
                         // 行を消した時、上に乗っていたブロックの数が多いほど
                         // 得点を高くする。
                         additional_score += level;
@@ -932,7 +932,7 @@ namespace Ahoris {
                 }
             }
         }
-        
+
         // 落ちているブロックを一段下に下げる。
         private void go_down_once(bool[,] checker) {
             for (int j = size.y_length() - 1; j >= 0; j--) {
@@ -946,7 +946,7 @@ namespace Ahoris {
                 }
             }
         }
-        
+
         /**
          * 落ちているブロックの塊が一段下へ下がることができるかどうかを判定する
          * true: 下がることができる
@@ -972,12 +972,12 @@ namespace Ahoris {
             // falseとなる条件が一つもなければtrue
             return true;
         }
-        
+
         /**
          * ブロックが宙に浮いているかどうかを判定する
          * 宙に浮いている場合true
          * 浮いていない場合false
-         * 
+         *
          * 最初の呼び出しの時はy, x地点の状態がEMPTYでないことが必要。
          */
         private bool is_surrounded_by_space(int y, int x, bool[,] checker) {
@@ -993,7 +993,7 @@ namespace Ahoris {
                 return false;
             } else {
                 checker[y, x] = true;
-                
+
                 // 下を検査する
                 if (y == size.y_length() - 1) {
                     // 着地している場合、浮いていない判定になる
@@ -1004,14 +1004,14 @@ namespace Ahoris {
                     // 他の方向への検査の場合も同様
                     return false;
                 }
-                
+
                 // 右を検査する
                 if (x == size.x_length() - 1) {
                     // ブロックが右端にある場合、検査しない
                 } else if (!is_surrounded_by_space(y, x + 1, checker)) {
                     return false;
                 }
-                
+
                 // 左を検査する
                 if (x == 0) {
                     // ブロックが左端にある場合、検査しない
@@ -1045,13 +1045,13 @@ namespace Ahoris {
             return true;
         }
     }
-    
+
     /**
      * ゲーム画面を描画するウィジェット
      */
     public class GameWidget : Gtk.DrawingArea {
         public GameModel model { get; private set; }
-        
+
         private double block_width = 20.0;
         private double block_height = 20.0;
         private double border_width = 1.0;
@@ -1060,7 +1060,7 @@ namespace Ahoris {
         private double field_height;
         private Gdk.RGBA field_bgcolor = { 0.3, 0.1, 0.1, 1.0 };
         private BlockDrawer block_drawer;
-        
+
         public GameWidget() {
             model = new GameModel(ModelSize.MODEL_10X20);
             init();
@@ -1070,12 +1070,12 @@ namespace Ahoris {
             this.model = model;
             init();
         }
-                
+
         public GameWidget.from_size(ModelSize size) {
             model = new GameModel(size);
             init();
         }
-        
+
         private void init() {
             block_drawer = new BlockDrawer();
             block_drawer.block_width = block_width;
@@ -1088,7 +1088,7 @@ namespace Ahoris {
             height_request = (int) field_height;
             queue_draw();
         }
-        
+
         public override bool draw(Cairo.Context cairo) {
             // フィールド全体を塗りつぶす
             cairo.set_source_rgba(field_bgcolor.red, field_bgcolor.green, field_bgcolor.blue, field_bgcolor.alpha);
@@ -1147,20 +1147,20 @@ namespace Ahoris {
         private double x;
         private double y;
         private Gdk.RGBA color;
-        
+
         public void move_to(int y, int x) {
             this.x = x;
             this.y = y;
         }
-        
+
         public void set_color(Gdk.RGBA color) {
             this.color = color;
         }
-        
+
         public void draw(Cairo.Context cairo) {
             draw_pattern(cairo);
         }
-        
+
         public void draw_pattern(Cairo.Context cairo) {
             double x1 = border_width + (border_width + block_width) * x;
             double x2 = x1 + block_width;
@@ -1182,27 +1182,27 @@ namespace Ahoris {
             cairo.line_to(x1, y1);
             cairo.line_to(x1, y2);
             cairo.fill();
-            
+
             brightness = 0.8;
             cairo.set_source_rgba(color.red * brightness, color.green * brightness, color.blue * brightness, color.alpha);
             cairo.move_to(x0, y0);
             cairo.line_to(x2, y1);
             cairo.line_to(x2, y2);
             cairo.fill();
-            
+
             brightness = 0.5;
             cairo.set_source_rgba(color.red * brightness, color.green * brightness, color.blue * brightness, color.alpha);
             cairo.move_to(x0, y0);
             cairo.line_to(x1, y2);
             cairo.line_to(x2, y2);
             cairo.fill();
-            
+
             cairo.rectangle(x1 + bezel_width, y1 + bezel_width, block_width - bezel_width * 2, block_height - bezel_width * 2);
             cairo.set_source_rgba(color.red, color.green, color.blue, 0.7);
             cairo.fill();
         }
     }
-    
+
     /**
      * 次に来るブロックの形状を表示するウィジェット
      */
@@ -1220,12 +1220,12 @@ namespace Ahoris {
             height_request = (int) ((block_height + border_width) * 4 + border_width);
             width_request = (int) ((block_height + border_width) * 4 + border_width);
         }
-        
+
         public override bool draw(Cairo.Context cairo) {
             cairo.set_source_rgba(bgcolor.red, bgcolor.green, bgcolor.blue, bgcolor.alpha);
             cairo.rectangle(0.0, 0.0, (double) width_request, (double) height_request);
             cairo.fill();
-            
+
             if (blocks != null) {
                 for (int j = 0; j < blocks.length; j++) {
                     for (int i = 0; i < blocks.length; i++) {
@@ -1240,7 +1240,7 @@ namespace Ahoris {
             return true;
         }
     }
-    
+
     public class ScoreBoard : Gtk.Box {
         public string label {
             get {
@@ -1251,7 +1251,7 @@ namespace Ahoris {
                 label_widget.label = label_value;
             }
         }
-        
+
         public int score {
             get {
                 return score_value;
@@ -1261,14 +1261,14 @@ namespace Ahoris {
                 change_score();
             }
         }
-        
+
         public int length { get; private set; default = 8; }
         private Gtk.Stack[] stacks;
         private Gtk.Label label_widget;
         private int score_value;
         private string label_value;
         private Pango.AttrList attr_list;
-        
+
         public ScoreBoard(string label, int length, int initial_score) {
             this.label_value = label;
             this.length = length;
@@ -1278,15 +1278,15 @@ namespace Ahoris {
                     .size(12)
                     .weight(BOLD)
                     .attrlist();
-            
+
             label_widget = new Gtk.Label(label_value) {
                 attributes = attr_list
             };
-            
+
             pack_start(label_widget, false, false);
 
             stacks = new Gtk.Stack[length];
-            
+
             for (int i = 0; i < length; i++) {
                 stacks[i] = new Gtk.Stack();
                 {
@@ -1296,20 +1296,20 @@ namespace Ahoris {
                         };
                         stacks[i].add_named(num_label, j.to_string());
                     }
-                    
+
                     stacks[i].transition_type = SLIDE_DOWN;
                     stacks[i].visible_child_name = "0";
                 }
-                
+
                 pack_end(stacks[i], false, false);
             }
-            
+
             Idle.add(() => {
                 change_score();
                 return false;
             });
         }
-        
+
         private void change_score() {
             string ns = (score_value % 10).to_string();
             if (stacks[0].visible_child_name != ns) {
@@ -1337,17 +1337,17 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
         // ブロックが上限に達した場合は表示する。リセットボタン、終了ボタンで終了する
         // 場合にはダイアログを表示しないため、falseにする。
         bool active_flag = true;
-        
+
         // ゲームモデルの初期化。
         var ahoris_model = new Ahoris.GameModel(MODEL_10X20);
         Ahoris.GameWidget ahoris_widget;
         Ahoris.StopWatch stop_watch;
-        
+
         // ウィンドウを生成
         var window = new Gtk.ApplicationWindow(app);
         {
             // 以降は普通にウィジェットを組み立てる。
-            
+
             var headerbar = new Gtk.HeaderBar();
             {
                 var title_logo = new Gtk.Image.from_resource("/images/title-logo.svg");
@@ -1363,7 +1363,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                     });
 
                 }
-                
+
                 var vbox1 = new Gtk.Box(VERTICAL, 8);
                 {
                     var hbox2 = new Gtk.Box(HORIZONTAL, 5);
@@ -1373,31 +1373,31 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                                 .weight(BOLD)
                                 .label("Time:")
                                 .build();
-                        
+
                         stop_watch = new Ahoris.StopWatch();
                         {
                             stop_watch.halign = END;
                             stop_watch.run.begin();
                         }
-                        
+
                         hbox2.pack_start(stop_watch_label, false, false);
                         hbox2.pack_end(stop_watch, false, false);
                     }
-                    
+
                     var score_board = new Ahoris.ScoreBoard("Score:", 6, 0);
                     {
                         ahoris_model.score_changed.connect((score, new_score, bonus) => {
                             score_board.score = score;
                         });
                     }
-                    
+
                     var lines_board = new Ahoris.ScoreBoard("Lines:", 3, 0);
                     {
                         ahoris_model.lines_changed.connect((lines, new_lines) => {
                             lines_board.score = lines;
                         });
                     }
-                    
+
                     var level_board = new Ahoris.ScoreBoard("Level:", 3, 1);
                     {
                         ahoris_model.level_changed.connect((level) => {
