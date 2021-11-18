@@ -70,20 +70,40 @@ namespace Ahoris {
      * 得点ルール
      */
     namespace Score {
-        // 一行消した場合 (シングル)
+        /*
+         * 一行消した場合 (シングル)
+         */
         public const int SINGLE = 40;
-        // 二行消した場合 (ダブル)
+        
+        /*
+         * 二行消した場合 (ダブル)
+         */
         public const int DOUBLE = 100;
-        // 三行消した場合 (トリプル)
+
+        /*
+         * 三行消した場合 (トリプル)
+         */
         public const int TRIPLE = 300;
-        // 四行消した場合 (テトリス)
+
+        /*
+         * 四行消した場合 (テトリス)
+         */
         public const int TETRIS = 1200;
-        // シングルとダブルを同時
+
+        /*
+         * シングルとダブルを同時
+         */
         public const int ONE_TWO = 1000;
-        // 二つのシングル (一行開け)
-        public const int ONE_SPLIT = 600;
-        // 二つのシングル (二行開け)
-        public const int TWO_SPLIT = 900;
+
+        /*
+         * 二つのシングル (一行開け)
+         */
+        public const int SINGLE_SPLIT = 600;
+
+        /*
+         * 二つのシングル (二行開け)
+         */
+        public const int DOUBLE_SPLIT = 900;
     }
 
     /**
@@ -855,14 +875,14 @@ namespace Ahoris {
             } else if (n3 == 1) {
                 if (n1 == 2) {
                     // 二行消して1行間に開けた場合
-                    new_score = Score.ONE_SPLIT;
+                    new_score = Score.SINGLE_SPLIT;
                 } else if (n1 == 3) {
                     // 三行消して1行間に開けた場合
                     new_score = Score.ONE_TWO;
                 }
             } else if (n3 == 2) {
                 // 二行消して2行間に開けた場合
-                new_score = Score.TWO_SPLIT;
+                new_score = Score.DOUBLE_SPLIT;
             }
             // 以上の基本点にレベルとボーナスをかける (ボーナスは連鎖消しをすると増える)
             score += new_score * level * bonus;
@@ -1058,7 +1078,8 @@ namespace Ahoris {
         private double bezel_width = 2.0;
         private double field_width;
         private double field_height;
-        private Gdk.RGBA field_bgcolor = { 0.3, 0.1, 0.1, 1.0 };
+        private Gdk.RGBA field_bgcolor = { 0.1, 0.1, 0.1, 1.0 };
+        private Gdk.RGBA dot_color = { 0.5, 0.5, 0.5, 0.25 };
         private BlockDrawer block_drawer;
 
         public GameWidget() {
@@ -1110,7 +1131,7 @@ namespace Ahoris {
                             }
                         }
                         // 各位置の背景にあるドットを描写する
-                        cairo.set_source_rgba(field_bgcolor.red * 1.2, field_bgcolor.green * 1.2, field_bgcolor.blue * 1.2, 1.0);
+                        cairo.set_source_rgba(dot_color.red, dot_color.green, dot_color.blue, dot_color.alpha);
                         cairo.arc(
                             border_width + ((block_width + border_width) * i) + (block_width / 2.0),
                             border_width + ((block_height + border_width) * j) + (block_height / 2.0),
@@ -1169,36 +1190,53 @@ namespace Ahoris {
             double x0 = x1 + block_width / 2;
             double y0 = y1 + block_height / 2;
 
-            double brightness = 1.5;
-            cairo.set_source_rgba(color.red * brightness, color.green * brightness, color.blue * brightness, color.alpha);
+            cairo.set_source_rgba(color.red, color.green, color.blue, 1.0);
+            cairo.rectangle(x1, y1, block_width, block_height);
+            cairo.fill();
+
+            cairo.set_source_rgba(1.0, 1.0, 1.0, 0.75);
             cairo.move_to(x0, y0);
             cairo.line_to(x1, y1);
             cairo.line_to(x2, y1);
             cairo.fill();
 
-            brightness = 1.3;
-            cairo.set_source_rgba(color.red * brightness, color.green * brightness, color.blue * brightness, color.alpha);
+            cairo.set_source_rgba(1.0, 1.0, 1.0, 0.5);
             cairo.move_to(x0, y0);
             cairo.line_to(x1, y1);
             cairo.line_to(x1, y2);
             cairo.fill();
 
-            brightness = 0.8;
-            cairo.set_source_rgba(color.red * brightness, color.green * brightness, color.blue * brightness, color.alpha);
+            cairo.set_source_rgba(0.0, 0.0, 0.0, 0.25);
             cairo.move_to(x0, y0);
             cairo.line_to(x2, y1);
             cairo.line_to(x2, y2);
             cairo.fill();
 
-            brightness = 0.5;
-            cairo.set_source_rgba(color.red * brightness, color.green * brightness, color.blue * brightness, color.alpha);
+            cairo.set_source_rgba(0.0, 0.0, 0.0, 0.5);
             cairo.move_to(x0, y0);
             cairo.line_to(x1, y2);
             cairo.line_to(x2, y2);
             cairo.fill();
 
-            cairo.rectangle(x1 + bezel_width, y1 + bezel_width, block_width - bezel_width * 2, block_height - bezel_width * 2);
-            cairo.set_source_rgba(color.red, color.green, color.blue, 0.7);
+            double x3 = x1 + bezel_width;
+            double x4 = block_width - bezel_width * 2;
+            double y3 = y1 + bezel_width;
+            double y4 = block_height - bezel_width * 2;
+            
+            Cairo.Pattern pat1 = new Cairo.Pattern.linear(x3, y3, x3 + x4, y3 + y4);
+            pat1.add_color_stop_rgba(1, color.red * 0.75, color.green * 0.75, color.blue * 0.75, color.alpha);
+            pat1.add_color_stop_rgba(0, color.red * 1.50, color.green * 1.50, color.blue * 1.50, color.alpha);
+            cairo.set_source(pat1);
+            cairo.rectangle(x3, y3, x4, y4);
+            cairo.fill();
+
+            Cairo.Pattern pat2 = new Cairo.Pattern.linear(x3, y3, x3 + x4, y3 + y4);
+            pat2.add_color_stop_rgba(1, 1.0, 1.0, 1.0, 0.5);
+            pat2.add_color_stop_rgba(0.5, 1.0, 1.0, 1.0, 0.25);
+            cairo.set_source(pat2);
+            cairo.move_to(x3, y3);
+            cairo.line_to(x3 + x4 * 0.75, y3);
+            cairo.line_to(x3, y3 + y4 / 2);
             cairo.fill();
         }
     }
