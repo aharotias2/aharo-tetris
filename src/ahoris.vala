@@ -1235,8 +1235,8 @@ namespace Ahoris {
             pat2.add_color_stop_rgba(0.5, 1.0, 1.0, 1.0, 0.25);
             cairo.set_source(pat2);
             cairo.move_to(x3, y3);
-            cairo.line_to(x3 + x4 * 0.75, y3);
-            cairo.line_to(x3, y3 + y4 / 2);
+            cairo.line_to(x3 + x4, y3);
+            cairo.curve_to(x3 + x4, y3, x3, y3, x3, y3 + y4);
             cairo.fill();
         }
     }
@@ -1246,7 +1246,7 @@ namespace Ahoris {
      */
     public class ReservedDisplayWidget : Gtk.DrawingArea {
         public FallingBlock? blocks { get; set; }
-        public Gdk.RGBA bgcolor = { 0.3, 0.1, 0.1, 1.0 };
+        public Gdk.RGBA bgcolor = { 0.1, 0.1, 0.1, 1.0 };
         public BlockDrawer block_drawer;
 
         public ReservedDisplayWidget(double block_width, double block_height, double border_width, double bezel_width) {
