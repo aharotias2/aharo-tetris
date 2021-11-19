@@ -70,37 +70,42 @@ namespace Ahoris {
      * 得点ルール
      */
     namespace Score {
-        /*
+        /**
          * 一行消した場合 (シングル)
          */
         public const int SINGLE = 40;
         
-        /*
+        /**
          * 二行消した場合 (ダブル)
          */
         public const int DOUBLE = 100;
 
-        /*
+        /**
          * 三行消した場合 (トリプル)
          */
         public const int TRIPLE = 300;
 
-        /*
+        /**
          * 四行消した場合 (テトリス)
          */
         public const int TETRIS = 1200;
 
-        /*
+        /**
+         * 五行以上消した場合
+         */
+        public const int SUPER = 2000;
+        
+        /**
          * シングルとダブルを同時
          */
         public const int ONE_TWO = 1000;
 
-        /*
+        /**
          * 二つのシングル (一行開け)
          */
         public const int SINGLE_SPLIT = 600;
 
-        /*
+        /**
          * 二つのシングル (二行開け)
          */
         public const int DOUBLE_SPLIT = 900;
@@ -884,6 +889,10 @@ namespace Ahoris {
                 // 二行消して2行間に開けた場合
                 new_score = Score.DOUBLE_SPLIT;
             }
+            if (n1 > 4) {
+                // 五行以上消した場合
+                new_score = Score.SUPER * n1;
+            }
             // 以上の基本点にレベルとボーナスをかける (ボーナスは連鎖消しをすると増える)
             score += new_score * level * bonus;
             score_changed(score, new_score, bonus);
@@ -1399,7 +1408,6 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                     ahoris_model.changed.connect(() => {
                         ahoris_widget.queue_draw();
                     });
-
                 }
 
                 var vbox1 = new Gtk.Box(VERTICAL, 8);
@@ -1443,6 +1451,15 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         });
                     }
 
+                    vbox1.pack_start(hbox2, false, false);
+                    vbox1.pack_start(score_board, false, false);
+                    vbox1.pack_start(lines_board, false, false);
+                    vbox1.pack_start(level_board, false, false);
+                    vbox1.height_request = ahoris_widget.height_request;
+                }
+
+                var vbox2 = new Gtk.Box(VERTICAL, 8);
+                {
                     var reserved_display = new Ahoris.ReservedDisplayWidget(20.0, 20.0, 1.0, 2.0);
                     {
                         ahoris_model.reserve.connect((reserved_blocks) => {
@@ -1452,6 +1469,23 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         Idle.add(() => {
                             reserved_display.width_request = vbox1.get_allocated_width();
                             return false;
+                        });
+                    }
+
+                    var reset_button = new Gtk.Button.with_label("リセットする");
+                    {
+                        reset_button.clicked.connect(() => {
+                            active_flag = false;
+                            ahoris_model.force_exit();
+                            create_window(app);
+                            window.close();
+                        });
+                    }
+
+                    var exit_button = new Gtk.Button.with_label("終了する");
+                    {
+                        exit_button.clicked.connect(() => {
+                            Process.exit(0);
                         });
                     }
 
@@ -1505,37 +1539,21 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         description_grid.row_spacing = 8;
                         description_grid.column_spacing = 4;
                     }
-
-                    var reset_button = new Gtk.Button.with_label("リセットする");
-                    {
-                        reset_button.clicked.connect(() => {
-                            active_flag = false;
-                            ahoris_model.force_exit();
-                            create_window(app);
-                            window.close();
-                        });
-                    }
-
-                    var exit_button = new Gtk.Button.with_label("終了する");
-                    {
-                        exit_button.clicked.connect(() => {
-                            Process.exit(0);
-                        });
-                    }
-
-                    vbox1.pack_start(hbox2, false, false);
-                    vbox1.pack_start(score_board, false, false);
-                    vbox1.pack_start(lines_board, false, false);
-                    vbox1.pack_start(level_board, false, false);
-                    vbox1.pack_start(reserved_display, false, false);
-                    vbox1.pack_start(description_grid, false, false);
-                    vbox1.pack_end(exit_button, false, false);
-                    vbox1.pack_end(reset_button, false, false);
-                    vbox1.height_request = ahoris_widget.height_request;
+                    
+                    vbox2.pack_start(reserved_display, false, false);
+                    vbox2.pack_start(description_grid, false, false);
+                    vbox2.pack_end(exit_button, false, false);
+                    vbox2.pack_end(reset_button, false, false);
+                    vbox2.height_request = ahoris_widget.height_request;
                 }
 
-                hbox1.pack_start(ahoris_widget, false, false);
                 hbox1.pack_start(vbox1, false, false);
+                hbox1.pack_start(ahoris_widget, false, false);
+                hbox1.pack_start(vbox2, false, false);
+                hbox1.halign = CENTER;
+                hbox1.hexpand = true;
+                hbox1.valign = CENTER;
+                hbox1.vexpand = true;
                 hbox1.margin = 6;
             }
 
