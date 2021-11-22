@@ -38,14 +38,14 @@ namespace Ahoris {
                         label.label = "%02d:%02d.%02d".printf(
                             time / 100 / 60,
                             time / 100 % 60,
-                            time % 60
+                            time % 100
                         );
                     } else {
                         label.label = "%d:%02d:%02d.%02d".printf(
                             time / 100 / 60 / 60,
                             time / 100 / 60 % 60,
                             time / 100 % 60,
-                            time % 60
+                            time % 100
                         );
                     }
                 }
