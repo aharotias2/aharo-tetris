@@ -71,12 +71,7 @@ AppImage
 ----------------------------------------------------------------------------------------------------
 すぐに実行可能なAppImageは以下のリンクからダウンロード可能でありやす。
 
-<https://drive.google.com/file/d/1Ru2x5OJvfFv4RBMLY0dYrYTONVZ6wgv6/view?usp=sharing>
-
-チェックサム
-
-* md5sum: a396261c793482f488d451c386e053f4
-* sha256sum: 3ebdbdda4a6c6c257ef9ff4e1db8d99fb55632b31488340850421eebf033e46b
+[リリースページ](https://github.com/aharotias2/ahoris/releases)
 
 ----------------------------------------------------------------------------------------------------
 
