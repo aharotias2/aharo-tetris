@@ -701,7 +701,7 @@ namespace AharoTetris {
                     if (field[y, x].status != EMPTY && falling.data[j, i] != 0) {
                         // 落ちているブロックと置いてあるブロックが重なっているとき
                         // 正しくコーディングできていればこのフローは通らないので例外とする。(強制終了)
-                        throw new GameError.LOGICAL_ERROR("このフローにこないようにプログラミングすること。");
+                        assert_not_reached();
                     }
                     // 固定処理
                     if (falling.data[j, i] != 0) {
@@ -1397,7 +1397,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
 
             var headerbar = new Gtk.HeaderBar();
             {
-                var title_logo = new Gtk.Image.from_resource("/images/title-logo.svg");
+                var title_logo = new Gtk.Image.from_resource("/images/aharo-tetris-logo.png");
                 headerbar.custom_title = title_logo;
             }
 
@@ -1472,7 +1472,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         });
                     }
 
-                    var reset_button = new Gtk.Button.with_label("リセットする");
+                    var reset_button = new Gtk.Button.with_label("Reset");
                     {
                         reset_button.clicked.connect(() => {
                             active_flag = false;
@@ -1482,7 +1482,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         });
                     }
 
-                    var exit_button = new Gtk.Button.with_label("終了する");
+                    var exit_button = new Gtk.Button.with_label("Exit");
                     {
                         exit_button.clicked.connect(() => {
                             Process.exit(0);
@@ -1497,7 +1497,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                             image_left.pixbuf = pixbuf_left;
                         }
 
-                        var description_left = new Gtk.Label("左に動かす");
+                        var description_left = new Gtk.Label("Move to Left");
 
                         var image_right = new Gtk.Image();
                         {
@@ -1505,7 +1505,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                             image_right.pixbuf = pixbuf_right;
                         }
 
-                        var description_right = new Gtk.Label("右に動かす");
+                        var description_right = new Gtk.Label("Move to Right");
 
                         var image_up = new Gtk.Image();
                         {
@@ -1513,7 +1513,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                             image_up.pixbuf = pixbuf_up;
                         }
 
-                        var description_up = new Gtk.Label("左回り");
+                        var description_up = new Gtk.Label("Turn Left");
 
                         var image_down = new Gtk.Image();
                         {
@@ -1521,10 +1521,10 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                             image_down.pixbuf = pixbuf_down;
                         }
 
-                        var description_down = new Gtk.Label("右回り");
+                        var description_down = new Gtk.Label("Turn Right");
 
                         var label_enter = new Gtk.Label("<b>Enter</b>") { use_markup = true };
-                        var description_enter = new Gtk.Label("加速する");
+                        var description_enter = new Gtk.Label("Drop");
 
                         description_grid.attach(image_left, 0, 0);
                         description_grid.attach(description_left, 1, 0);
@@ -1563,7 +1563,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                     // リセットボタンを押して終了した場合はここを通過しない。
                     active_flag = false;
                     stop_watch.stop();
-                    var dialog = new Gtk.MessageDialog(window, MODAL, INFO, OK, "はいゲーム終了");
+                    var dialog = new Gtk.MessageDialog(window, MODAL, INFO, OK, "Yes, game over.");
                     dialog.run();
                     dialog.close();
                 }
