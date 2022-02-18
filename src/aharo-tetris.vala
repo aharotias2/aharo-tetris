@@ -14,7 +14,7 @@
  * Copyright 2021 Takayuki Tanaka
  */
 
-namespace Ahoris {
+namespace AharoTetris {
     /**
      * エラーを定義します。基本的に異常終了判定にのみ使用します。
      * つまり基本的に発生しない想定
@@ -1386,9 +1386,9 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
         bool active_flag = true;
 
         // ゲームモデルの初期化。
-        var ahoris_model = new Ahoris.GameModel(MODEL_10X20);
-        Ahoris.GameWidget ahoris_widget;
-        Ahoris.StopWatch stop_watch;
+        var ahoris_model = new AharoTetris.GameModel(MODEL_10X20);
+        AharoTetris.GameWidget ahoris_widget;
+        AharoTetris.StopWatch stop_watch;
 
         // ウィンドウを生成
         var window = new Gtk.ApplicationWindow(app);
@@ -1403,7 +1403,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
 
             var hbox1 = new Gtk.Box(HORIZONTAL, 8);
             {
-                ahoris_widget = new Ahoris.GameWidget.with_model(ahoris_model);
+                ahoris_widget = new AharoTetris.GameWidget.with_model(ahoris_model);
                 {
                     ahoris_model.changed.connect(() => {
                         ahoris_widget.queue_draw();
@@ -1414,13 +1414,13 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                 {
                     var hbox2 = new Gtk.Box(HORIZONTAL, 5);
                     {
-                        var stop_watch_label = Ahoris.LabelBuilder.create()
+                        var stop_watch_label = AharoTetris.LabelBuilder.create()
                                 .size(12)
                                 .weight(BOLD)
                                 .label("Time:")
                                 .build();
 
-                        stop_watch = new Ahoris.StopWatch();
+                        stop_watch = new AharoTetris.StopWatch();
                         {
                             stop_watch.halign = END;
                             stop_watch.run.begin();
@@ -1430,21 +1430,21 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                         hbox2.pack_end(stop_watch, false, false);
                     }
 
-                    var score_board = new Ahoris.ScoreBoard("Score:", 6, 0);
+                    var score_board = new AharoTetris.ScoreBoard("Score:", 6, 0);
                     {
                         ahoris_model.score_changed.connect((score, new_score, bonus) => {
                             score_board.score = score;
                         });
                     }
 
-                    var lines_board = new Ahoris.ScoreBoard("Lines:", 3, 0);
+                    var lines_board = new AharoTetris.ScoreBoard("Lines:", 3, 0);
                     {
                         ahoris_model.lines_changed.connect((lines, new_lines) => {
                             lines_board.score = lines;
                         });
                     }
 
-                    var level_board = new Ahoris.ScoreBoard("Level:", 3, 1);
+                    var level_board = new AharoTetris.ScoreBoard("Level:", 3, 1);
                     {
                         ahoris_model.level_changed.connect((level) => {
                             level_board.score = level;
@@ -1460,7 +1460,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
 
                 var vbox2 = new Gtk.Box(VERTICAL, 8);
                 {
-                    var reserved_display = new Ahoris.ReservedDisplayWidget(20.0, 20.0, 1.0, 2.0);
+                    var reserved_display = new AharoTetris.ReservedDisplayWidget(20.0, 20.0, 1.0, 2.0);
                     {
                         ahoris_model.reserve.connect((reserved_blocks) => {
                             reserved_display.blocks = reserved_blocks;
@@ -1589,7 +1589,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
                       case Gdk.Key.Return:
                         try {
                             ahoris_model.go_down_fast();
-                        } catch (Ahoris.GameError e) {
+                        } catch (AharoTetris.GameError e) {
                             // この例外フローはコーディングミスがあった場合に起きるので
                             // 通常は通らない。
                             printerr(@"$(e.message)\n");
@@ -1616,7 +1616,7 @@ Gtk.ApplicationWindow create_window(Gtk.Application app) {
 
 int main(string[] argv) {
     Random.set_seed((uint32) new DateTime.now_utc().to_unix());
-    var app = new Gtk.Application("com.github.aharotias2.Ahoris", FLAGS_NONE);
+    var app = new Gtk.Application("com.github.aharotias2.AharoTetris", FLAGS_NONE);
     app.activate.connect(() => {
         create_window(app);
     });

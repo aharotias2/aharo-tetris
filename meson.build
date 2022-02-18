@@ -1,4 +1,4 @@
-project('com.github.aharotias2.Ahoris', 'vala', 'c', version: '0.0.1')
+project('com.github.aharotias2.AharoTetris', 'vala', 'c', version: '0.0.1')
 
 libm_dep = meson.get_compiler('c').find_library('libm')
 
@@ -10,9 +10,9 @@ resources = gnome.compile_resources(
 )
 
 executable(
-  'com.github.aharotias2.Ahoris',
+  meson.project_name(),
   [
-    'src/ahoris.vala',
+    'src/aharo-tetris.vala',
     'src/labelbuilder.vala',
     'src/stopwatch.vala',
     resources
@@ -27,11 +27,11 @@ executable(
 )
 
 install_data(
-  'data/icon-128.png', rename: 'com.github.aharotias2.ahoris.png',
+  'data/icon-128.png', rename: meson.project_name() + '.png',
   install_dir: get_option('datadir') / 'share/icons/hicolor/128x128/apps'
 )
 
 install_data(
-  'data/com.github.aharotias2.ahoris.desktop',
+  'data/' + meson.project_name() + '.desktop',
   install_dir: get_option('datadir') / 'share/applications'
 )

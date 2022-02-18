@@ -17,7 +17,7 @@
  * Copyright 2021 Takayuki Tanaka
  */
 
-namespace Ahoris {
+namespace AharoTetris {
     public class LabelBuilder : Object {
         private Pango.FontDescription fd;
         private string label_value;
