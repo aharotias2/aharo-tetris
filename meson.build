@@ -28,10 +28,10 @@ executable(
 
 install_data(
   'data/icon-128.png', rename: meson.project_name() + '.png',
-  install_dir: get_option('datadir') / 'share/icons/hicolor/128x128/apps'
+  install_dir: get_option('datadir') / 'icons/hicolor/128x128/apps'
 )
 
 install_data(
   'data/' + meson.project_name() + '.desktop',
-  install_dir: get_option('datadir') / 'share/applications'
+  install_dir: get_option('datadir') / 'applications'
 )

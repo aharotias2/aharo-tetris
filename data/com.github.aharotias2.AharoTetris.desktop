@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Ahoris
-Exec=com.github.aharotias2.Ahoris
-Icon=com.github.aharotias2.ahoris
+Name=AharoTetris
+Exec=com.github.aharotias2.AharoTetris
+Icon=com.github.aharotias2.AharoTetris
 Terminal=false
 Type=Application
 Comment=The tetris game application using Gtk3
