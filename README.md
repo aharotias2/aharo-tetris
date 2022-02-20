@@ -5,6 +5,8 @@ Aharo-Tetris
 A very simple Tetris implementation using the GTK + 3 toolkit.
 
 It operates in cascading mode by default.
+This feature is a reinvention of the wheel by me and I didn't refer to it at the time of creation,
+but later I found a detailed explanation on the page below. 
 
 [Cascading mode specifications](https://tetris.wiki/Cascade_mode) (reference example, not strictly
 followed) 
@@ -30,14 +32,15 @@ I'm sorry if I made a mistake.
 
 Build
 ----------------------------------------------------------------------------------------------------
-You can build using Meson as usual.
+You can build AharoTetris using Meson as usual.
 
     $ meson --prefix=/usr/local build
 	$ cd build
 	$ ninja
 	$ sudo ninja install
 
-prerequisite
+prerequisite:
+
 * Gtk+3
 * Vala
 * Meson
